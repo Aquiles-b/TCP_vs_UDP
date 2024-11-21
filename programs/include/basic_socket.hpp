@@ -7,7 +7,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
-namespace basic_socket {
+namespace tcp_vs_udp {
     class BasicSocket {
         protected:
             int descr_ptr;

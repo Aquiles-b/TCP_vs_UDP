@@ -1,10 +1,8 @@
 #include "../include/udp_server.hpp"
 #include <sys/socket.h>
 
-using namespace udp_server;
+using namespace tcp_vs_udp;
 
 UDPServer::UDPServer(const int& port_number) :
-    basic_socket::BasicSocket(port_number, SOCK_STREAM) {
-
-
+    BasicSocket(port_number, SOCK_STREAM) {
 }

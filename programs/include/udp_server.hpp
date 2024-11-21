@@ -3,8 +3,8 @@
 
 #include "basic_socket.hpp"
 
-namespace udp_server {
-    class UDPServer : public basic_socket::BasicSocket {
+namespace tcp_vs_udp {
+    class UDPServer : public BasicSocket {
         private:
             int descr_ptr;
 

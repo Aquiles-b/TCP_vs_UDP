@@ -1,6 +1,6 @@
 #include "../include/basic_socket.hpp"
 
-using namespace basic_socket;
+using namespace tcp_vs_udp;
 
 BasicSocket::BasicSocket(const int& port_number, const int& socket_type) {
     this->descr_ptr = socket(AF_INET, socket_type, 0);
