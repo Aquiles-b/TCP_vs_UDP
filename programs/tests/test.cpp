@@ -9,9 +9,8 @@ int main(int argc, char *argv[]) {
         std::cerr << "Usage: " << argv[0] << " <ip address> <port_number>" << std::endl;
         return 1;
     }
-
-    while (1) {
-    }
+	TCPServer s = TCPServer(argv[1], std::atoi(argv[2]));
+	s.runParallel();
 
     return 0;
 }

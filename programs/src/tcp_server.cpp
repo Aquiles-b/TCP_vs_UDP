@@ -31,6 +31,7 @@ void TCPServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
 }
 
 void TCPServer::handleClientParallel(int clientfd, sockaddr_in clientaddr) {
+	
 	char fname[256];
 	recv(clientfd, fname, sizeof(fname), 0);
 	FILE *fp = fopen(fname, "r");
