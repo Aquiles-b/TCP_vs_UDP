@@ -7,6 +7,7 @@ TESTS = $(shell find programs/tests -name '*.cpp')
 OBJECTS = $(patsubst programs/src/%.cpp, programs/build/%.o, $(SOURCES))
 OBJECTS += $(patsubst programs/tests/%.cpp, programs/build/%.o, $(TESTS))
 
+HEADDIR=./programs/include
 HEADERS = $(shell find programs/include -name '*.hpp')
 COMMON_OBJ = $(patsubst programs/include/%.hpp, programs/build/%.o, $(HEADERS))
 
