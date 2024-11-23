@@ -3,6 +3,6 @@
 
 using namespace tcp_vs_udp;
 
-UDPServer::UDPServer(const int& port_number) :
-    BasicSocket(port_number, SOCK_STREAM) {
+UDPServer::UDPServer(const std::string& ip_address, const int& port_number) :
+    BasicServer(ip_address, port_number, SOCK_STREAM) {
 }
