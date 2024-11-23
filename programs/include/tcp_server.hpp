@@ -11,9 +11,7 @@ namespace tcp_vs_udp {
         public:
             TCPServer(const std::string& ip_address, const int& port_number);
 		protected:
-			// virtual void handleClientIterative(int clientfd, sockaddr_in clientaddr);
-
-			virtual void handleClientParallel(int clientfd, sockaddr_in clientaddr) override;
+			virtual void handleClient(int clientfd, sockaddr_in clientaddr) override;
 
 			virtual void sendFile(int clientfd, sockaddr_in &caddr, FILE *file) override;
 

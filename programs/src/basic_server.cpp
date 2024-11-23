@@ -33,11 +33,7 @@ BasicServer::~BasicServer() {
     std::cout << "Socket closed." << std::endl;
 }
 
-void BasicServer::handleClientIterative(int clientfd, sockaddr_in clientaddr) {
-	std::cout << "Yaaaaaaaaaaay!\n";
-}
-
-void BasicServer::handleClientParallel(int clientfd, sockaddr_in clientaddr) {
+void BasicServer::handleClient(int clientfd, sockaddr_in clientaddr) {
 	std::cout << "Yaaaaaaaaaaay!\n";
 }
 
@@ -56,10 +52,26 @@ void BasicServer::runParallel() {
 		}
 		this->client_threadlock.lock();
 		this->client_threads[clientfd] = std::thread([this, clientfd, clientaddr]() {
-    		this->handleClientParallel(clientfd, clientaddr);
+    		this->handleClient(clientfd, clientaddr);
+			this->client_threadlock.lock();
+			this->client_threads.erase(clientfd);
+			this->client_threadlock.unlock();
 		});
 		this->client_threadlock.unlock();
 		this->client_threads[clientfd].detach();
+	}
+}
+
+void BasicServer::runIterative() {
+	while (true) {
+		sockaddr_in clientaddr;
+		socklen_t slen = sizeof(clientaddr);
+		int clientfd = accept(this->listen_socket, (sockaddr *) &clientaddr, &slen);
+		if (clientfd < 0) {
+			std::cerr << "Accept error." << std::endl;
+			continue;
+		}
+	   	this->handleClient(clientfd, clientaddr);
 	}
 }
 

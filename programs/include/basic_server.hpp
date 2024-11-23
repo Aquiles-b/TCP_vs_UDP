@@ -22,9 +22,7 @@ namespace tcp_vs_udp {
 			std::mutex client_threadlock;
 			size_t buffersize;
 
-			virtual void handleClientIterative(int clientfd, sockaddr_in clientaddr);
-
-			virtual void handleClientParallel(int clientfd, sockaddr_in clientaddr);
+			virtual void handleClient(int clientfd, sockaddr_in clientaddr);
 
 			virtual void sendFile(int clientfd, sockaddr_in &caddr, FILE *file);
 

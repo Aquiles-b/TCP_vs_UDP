@@ -22,16 +22,15 @@ void TCPServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
 	buffer[0] = MessageType::DATA;
 	while ((bytesread = fread(buffer+1, 1, bsize, file)) > 0) {
 		if (send(clientfd, buffer, bsize+1, 0) < 0) {
-			delete buffer;
+			delete[] buffer;
 			return;
 		}
 	}
 
-	delete buffer;
+	delete[] buffer;
 }
 
-void TCPServer::handleClientParallel(int clientfd, sockaddr_in clientaddr) {
-	
+void TCPServer::handleClient(int clientfd, sockaddr_in clientaddr) {
 	char fname[256];
 	recv(clientfd, fname, sizeof(fname), 0);
 	FILE *fp = fopen(fname, "r");
@@ -44,7 +43,4 @@ void TCPServer::handleClientParallel(int clientfd, sockaddr_in clientaddr) {
 	}
 
 	close(clientfd);
-	this->client_threadlock.lock();
-	this->client_threads.erase(clientfd);
-	this->client_threadlock.unlock();
 }
