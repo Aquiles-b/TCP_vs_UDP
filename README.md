@@ -6,5 +6,5 @@
 - Servidor envia mensagem com tamanho do arquivo e tamanho do buffer de transmissão de arquivo
 - Cliente recebe dados de transmissão, aloca buffer e se prepara para receber dados
 - Servidor envia dados do arquivo para o cliente
-- Servidor envia mensagem de fim de transmissão
-- Ambos os lados terminam a conexão
+- Servidor encerra conexão
+- Cliente fecha arquivo
