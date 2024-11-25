@@ -9,10 +9,13 @@ BasicServer::BasicServer(const std::string& ip_address, const int& port_number, 
         std::cerr << "Error: Unable to open socket." << std::endl;
         exit(1);
     }
+	int flag = 1;
+	setsockopt(listen_socket, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(flag));
 
     // Initialize Address 
     this->listen_socket_addr.sin_family = AF_INET;
     this->listen_socket_addr.sin_port = htons(port_number);
+	//this->listen_socket_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     this->listen_socket_addr.sin_addr.s_addr = inet_addr(ip_address.c_str()); 
     std::memset(&(this->listen_socket_addr.sin_zero), 0, 8);
 
@@ -46,6 +49,7 @@ void BasicServer::runParallel() {
 		sockaddr_in clientaddr;
 		socklen_t slen = sizeof(clientaddr);
 		int clientfd = accept(this->listen_socket, (sockaddr *) &clientaddr, &slen);
+		std::cout << "YAYYYYYYY!\n";
 		if (clientfd < 0) {
 			std::cerr << "Accept error." << std::endl;
 			continue;

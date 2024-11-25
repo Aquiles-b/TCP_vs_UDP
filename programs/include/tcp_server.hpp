@@ -4,6 +4,7 @@
 #include "basic_server.hpp"
 #include <sys/epoll.h>
 #include <vector>
+#include <netinet/tcp.h>
 
 namespace tcp_vs_udp {
     class TCPServer : public BasicServer {

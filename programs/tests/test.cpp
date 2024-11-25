@@ -10,6 +10,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 	TCPServer s = TCPServer(argv[1], std::atoi(argv[2]));
+	s.setBufferSize(8192*8);
 	s.runParallel();
 
     return 0;

@@ -1,27 +1,10 @@
 # Comunicação
-Servidor aceita cliente
-Cliente (nome do arquivo) -> Servidor 
-Servidor abre o arquivo e 
-
-constexpr size_t bufferlen = 1480;
-
-typedef mensagem uint8_t;
-
-enum MessageType {
-	ERROR,
-	DATA,
-	DOWNLOAD
-}
-
-enum MessageType getMessageType(uint8_t *buffer) {
-	return buffer[0];
-}
-
-mensagem m = new uint_8[1024];
-/*
-struct mensagem {
-	enum MessageType mType;
-	uint8_t buffer[bufferlen];
-}
-*/
-
+## TCP
+- Cliente inicia conexão com servidor
+- Cliente envia o nome do arquivo que deseja baixar
+- Servidor abre o arquivo
+- Servidor envia mensagem com tamanho do arquivo e tamanho do buffer de transmissão de arquivo
+- Cliente recebe dados de transmissão, aloca buffer e se prepara para receber dados
+- Servidor envia dados do arquivo para o cliente
+- Servidor envia mensagem de fim de transmissão
+- Ambos os lados terminam a conexão
