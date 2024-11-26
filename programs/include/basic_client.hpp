@@ -20,6 +20,7 @@ namespace tcp_vs_udp {
 			~BasicClient();
 
 			void connectToServer();
+            MessageType getMessageType(uint8_t *buffer);
 
 			virtual int download(char *fname);
 		private:

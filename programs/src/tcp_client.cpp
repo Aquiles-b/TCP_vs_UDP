@@ -2,10 +2,6 @@
 
 using namespace tcp_vs_udp;
 
-MessageType getMessageType(uint8_t *buffer) {
-	return static_cast<MessageType>(buffer[0]);
-}
-
 TCPClient::TCPClient(char *addrstr, char *port) 
 	: BasicClient(SOCK_STREAM, addrstr, port) {
 

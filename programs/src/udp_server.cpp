@@ -1,17 +1,37 @@
 #include "../include/udp_server.hpp"
-#include <cstdio>
-#include <sys/socket.h>
 
 using namespace tcp_vs_udp;
 
 UDPServer::UDPServer(const std::string& ip_address, const int& port_number) :
-    BasicServer(ip_address, port_number, SOCK_STREAM) {
+    BasicServer(ip_address, port_number, SOCK_STREAM), win_size{5} {
+}
+
+UDPServer::UDPServer(const std::string& ip_address, const int& port_number, const int& win_size) :
+    UDPServer(ip_address, port_number) {
+    this->win_size = win_size;
 }
 
 void UDPServer::handleClient(int clientfd, sockaddr_in clientaddr) {
 	char fname[256];
-	recv(clientfd, fname, sizeof(fname), 0);
-	FILE *fp = fopen(fname, "r");
+    struct timeval timeout;
+    // Configurando o timeout para recvfrom()
+    timeout.tv_sec = 5;
+    timeout.tv_usec = 100000;  // 100.000 microssegundos = 100 milissegundos;
+    if (setsockopt(clientfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
+        perror("Error: Unable to set timeout");
+    }
+
+    socklen_t caddr_len = sizeof(clientaddr);
+	if (recvfrom(clientfd, fname, sizeof(fname), 0, (sockaddr *) &clientaddr, &caddr_len) < 0) {
+        std::cerr << "Error: recvfrom: " << errno << std::endl;
+        sendError(clientfd, clientaddr);
+        return;
+    }
+
+    std::string filename = std::string(fname);
+    filename = "programs/files/" + filename;
+
+	FILE *fp = fopen(filename.c_str(), "r");
 	if (fp == NULL) {
 		sendError(clientfd, clientaddr);
 	}
@@ -30,7 +50,7 @@ void UDPServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
     }
 
     u_int8_t *sliding_window, *buffer_aux, client_buf[2], client_seq, current_seq=0;
-    size_t tam_last_message = 0;
+    size_t last_message_size = 0;
     try {
         sliding_window = new u_int8_t[this->win_size*(this->buffersize+2)*2];
     }
@@ -46,25 +66,29 @@ void UDPServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
     int win_init_idx = 0, num_new_messages=0;
 
     num_new_messages = fill_sliding_window(sliding_window, file, win_init_idx,
-                                            num_new_messages, current_seq, tam_last_message);
-
+                                            num_new_messages, current_seq, last_message_size);
     while (1) {
         // Envia janela
-        if (!send_window(clientfd, sliding_window, caddr, win_init_idx, tam_last_message)) {
+        if (!send_window(clientfd, sliding_window, caddr, win_init_idx, last_message_size)) {
             std::cerr << "Error: send_window: " << errno << std::endl;
             break;
         }
 
         // Preencher buffer caso esteja perto da metade
-        if (!tam_last_message && (num_new_messages - this->win_size) <= this->win_size) {
+        if (!last_message_size && (num_new_messages - this->win_size) <= this->win_size) {
             num_new_messages = fill_sliding_window(sliding_window, file, win_init_idx,
-                                                    num_new_messages, current_seq, tam_last_message);
+                                                    num_new_messages, current_seq, last_message_size);
         }
 
         // Recebe resposta do client
         if (recvfrom(clientfd, client_buf, 2, 0, cadd_aux, &cadd_len) < 0) {
-            std::cerr << "Error: recvfrom: " << errno << std::endl;
-            break;
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                continue;
+            } 
+            else {
+                std::cerr << "Error: recvfrom: " << errno << std::endl;
+                break;
+            }
         }
         
         if (client_buf[0] == MessageType::ACK) {
@@ -87,7 +111,7 @@ void UDPServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
 }
 
 bool UDPServer::send_window(const int&clientfd, u_int8_t *sliding_window,
-                            const sockaddr_in &caddr, const int &win_init_idx, const size_t &tam_last_message) {
+                            const sockaddr_in &caddr, const int &win_init_idx, const size_t &last_message_size) {
     socklen_t caddr_len = sizeof(caddr);
     sockaddr *caddr_aux = (sockaddr *) &caddr;
     size_t &bsize = this->buffersize;
@@ -105,7 +129,8 @@ bool UDPServer::send_window(const int&clientfd, u_int8_t *sliding_window,
             }
         }
         else {
-            if (sendto(clientfd, buffer_aux, tam_last_message, 0, caddr_aux, caddr_len) < 0) {
+            // +2 para enviar o byte do tipo e o byte do seq
+            if (sendto(clientfd, buffer_aux, last_message_size+2, 0, caddr_aux, caddr_len) < 0) {
                 return false;
             }
             return true;
@@ -115,41 +140,43 @@ bool UDPServer::send_window(const int&clientfd, u_int8_t *sliding_window,
 }
 
 int UDPServer::fill_sliding_window(u_int8_t *sliding_window, FILE *file, const int &win_init_idx, 
-                                    const int &num_new_messages, u_int8_t &current_seq, size_t &tam_last_message) {
-    size_t &bsize = this->buffersize, bytes_read;
+                                    const int &num_new_messages, u_int8_t &current_seq, size_t &last_message_size) {
+    size_t &bsize = this->buffersize, bytes_read, last_bytes_read;
     int i = (win_init_idx + num_new_messages) % (this->win_size*2), count = 0;
     for (; i < this->win_size*2 - num_new_messages; i++) {
         bytes_read = fread(sliding_window + 2 + i*bsize, 1, bsize, file);
         if (bytes_read > 0) {
-            sliding_window[i*bsize] = MessageType::DATA;
-            sliding_window[i*bsize + 1] = current_seq;
+            (sliding_window + i*bsize)[0] = MessageType::DATA;
+            (sliding_window + i*bsize)[1] = current_seq;
             current_seq++;
         }
         else {
             i--;
-            sliding_window[i*buffersize] = MessageType::ENDTX;
-            tam_last_message = bytes_read;
+            (sliding_window + i*bsize)[0] = MessageType::ENDTX;
+            last_message_size = last_bytes_read;
             break;
         }
         count++;
+        last_bytes_read = bytes_read;
     }
     return count + num_new_messages;
 }
 
 bool UDPServer::send_file_and_buffer_info(int clientfd, sockaddr_in &caddr, FILE *file,
                                                                     const size_t &bsize) {
-	uint8_t buffer[1+2*sizeof(size_t)], client_buffer[2];
+	uint8_t buffer[1+3*sizeof(size_t)], client_buffer[2];
 	buffer[0] = MessageType::TXDATA;
 	fseek(file, 0, SEEK_END); 
 	size_t fsize = ftell(file); // Pega o tamanho
 	((size_t*) (buffer+1))[0] = fsize; // Coloca tamanho na mensagem
 	((size_t*) (buffer+1))[1] = bsize; // Coloca tamanho do buffer na mensagem
+    ((size_t*) (buffer+1))[2] = static_cast<size_t>(this->win_size); // Coloca tamanho da janela na mensagem
 	// Mensagem:
-	// MTYPE (uint8) | FILE SIZE (size_t) | SERVER TRANSMISSION BUFFER SIZE (size_t)
+	// MTYPE (uint8) | FILE SIZE (size_t) | SERVER TRANSMISSION BUFFER SIZE (size_t) | WINDOW SIZE (size_t)
     socklen_t caddr_len = sizeof(caddr);
     sockaddr *caddr_aux = (sockaddr *) &caddr;
     while (1) {
-        if (sendto(clientfd, buffer, 1+2*sizeof(size_t), 0, caddr_aux, sizeof(caddr)) < 0){
+        if (sendto(clientfd, buffer, 1+3*sizeof(size_t), 0, caddr_aux, sizeof(caddr)) < 0){
             return false;
         }
         if (recvfrom(clientfd, client_buffer, 2, 0, caddr_aux, &caddr_len) < 0) {

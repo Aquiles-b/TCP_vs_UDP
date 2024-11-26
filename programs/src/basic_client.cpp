@@ -2,6 +2,10 @@
 
 using namespace tcp_vs_udp;
 
+MessageType BasicClient::getMessageType(uint8_t *buffer) {
+	return static_cast<MessageType>(buffer[0]);
+}
+
 BasicClient::BasicClient(int protocol, char *addrstr, char *port) {
 	int pnum;
 	memset(&this->saddr, 0, sizeof(this->saddr));

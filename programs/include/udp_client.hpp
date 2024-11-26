@@ -5,12 +5,26 @@
 
 namespace tcp_vs_udp {
 	class UDPClient : public BasicClient {
+        private:
+            int win_size;
+            int init_win_idx;
+            u_int8_t *sliding_win_buf;
+            size_t bsize;
+            size_t last_message_size;
+            u_int8_t current_seq;
 		public:
 			UDPClient(char *addrstr, char *port);
 			virtual int download(char *fname) override;
 
-            size_t get_buffer_size(char *fname);
+            bool get_buffer_and_win_size(char *fname);
+
+            void setWinSize(int win_size);
+            int recv_window(u_int8_t **sliding_win);
+            void init_sliding_win_buf();
+
+            void send_ACK() const;
+            void send_NACK() const;
 	};
-};
+}
 
 #endif

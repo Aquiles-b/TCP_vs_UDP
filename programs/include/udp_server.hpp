@@ -10,6 +10,7 @@ namespace tcp_vs_udp {
 
         public:
             UDPServer(const std::string& ip_address, const int& port_number);
+            UDPServer(const std::string& ip_address, const int& port_number, const int& win_size);
 
 			virtual void handleClient(int clientfd, sockaddr_in clientaddr) override;
 			virtual void sendFile(int clientfd, sockaddr_in &caddr, FILE *file) override;
