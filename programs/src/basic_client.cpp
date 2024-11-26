@@ -6,7 +6,7 @@ BasicClient::BasicClient(int protocol, char *addrstr, char *port) {
 	int pnum;
 	memset(&this->saddr, 0, sizeof(this->saddr));
 	saddr.sin_family = AF_INET;
-	if (inet_pton(saddr.sin_family, addrstr, &saddr.sin_addr) < -1) {
+	if (inet_pton(saddr.sin_family, addrstr, &saddr.sin_addr) < 0) {
 		std::cerr << "Invalid address.\n";
 		exit(1);
 	}

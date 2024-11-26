@@ -24,6 +24,11 @@ void UDPServer::handleClient(int clientfd, sockaddr_in clientaddr) {
 }
 
 void UDPServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
+    if (!send_file_and_buffer_info(clientfd, caddr, file, this->buffersize)) {
+        std::cerr << "Error: send_file_and_buffer_info: " << errno << std::endl;
+        return;
+    }
+
     u_int8_t *sliding_window, *buffer_aux, client_buf[2], client_seq, current_seq=0;
     size_t tam_last_message = 0;
     try {
@@ -33,6 +38,7 @@ void UDPServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
         std::cerr << "Error: Unable to create sliding window. " << errno << std::endl;
         return;
     }
+
     sockaddr *cadd_aux = (sockaddr *) &caddr;
     socklen_t cadd_len = sizeof(caddr);
     size_t &bsize = this->buffersize;
@@ -71,6 +77,10 @@ void UDPServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
 
             win_init_idx = (win_init_idx + (client_seq - buffer_aux[1])) % (this->win_size*2);
             num_new_messages -= client_seq - buffer_aux[1];
+        }
+
+        if (num_new_messages <= 0) {
+            break;
         }
     }
     delete[] sliding_window;
@@ -124,6 +134,35 @@ int UDPServer::fill_sliding_window(u_int8_t *sliding_window, FILE *file, const i
         count++;
     }
     return count + num_new_messages;
+}
+
+bool UDPServer::send_file_and_buffer_info(int clientfd, sockaddr_in &caddr, FILE *file,
+                                                                    const size_t &bsize) {
+	uint8_t buffer[1+2*sizeof(size_t)], client_buffer[2];
+	buffer[0] = MessageType::TXDATA;
+	fseek(file, 0, SEEK_END); 
+	size_t fsize = ftell(file); // Pega o tamanho
+	((size_t*) (buffer+1))[0] = fsize; // Coloca tamanho na mensagem
+	((size_t*) (buffer+1))[1] = bsize; // Coloca tamanho do buffer na mensagem
+	// Mensagem:
+	// MTYPE (uint8) | FILE SIZE (size_t) | SERVER TRANSMISSION BUFFER SIZE (size_t)
+    socklen_t caddr_len = sizeof(caddr);
+    sockaddr *caddr_aux = (sockaddr *) &caddr;
+    while (1) {
+        if (sendto(clientfd, buffer, 1+2*sizeof(size_t), 0, caddr_aux, sizeof(caddr)) < 0){
+            return false;
+        }
+        if (recvfrom(clientfd, client_buffer, 2, 0, caddr_aux, &caddr_len) < 0) {
+            return false;
+        }
+        if (client_buffer[0] == MessageType::ACK) {
+            break;
+        }
+    }
+
+    fseek(file, 0, SEEK_SET);
+
+    return true;
 }
 
 void UDPServer::setWinSize(size_t win_size) {
