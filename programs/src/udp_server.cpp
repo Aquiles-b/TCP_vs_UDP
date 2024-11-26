@@ -15,7 +15,7 @@ void UDPServer::handleClient(int clientfd, sockaddr_in clientaddr) {
 	char fname[256];
     struct timeval timeout;
     // Configurando o timeout para recvfrom()
-    timeout.tv_sec = 5;
+    timeout.tv_sec = 0;
     timeout.tv_usec = 100000;  // 100.000 microssegundos = 100 milissegundos;
     if (setsockopt(clientfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
         perror("Error: Unable to set timeout");
@@ -52,7 +52,7 @@ void UDPServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
     u_int8_t *sliding_window, *buffer_aux, client_buf[2], client_seq, current_seq=0;
     size_t last_message_size = 0;
     try {
-        sliding_window = new u_int8_t[this->win_size*(this->buffersize+2)*2];
+        sliding_window = new u_int8_t[this->win_size*this->buffersize*2];
     }
     catch (...) {
         std::cerr << "Error: Unable to create sliding window. " << errno << std::endl;
@@ -75,7 +75,7 @@ void UDPServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
         }
 
         // Preencher buffer caso esteja perto da metade
-        if (!last_message_size && (num_new_messages - this->win_size) <= this->win_size) {
+        if (!last_message_size && (num_new_messages - this->win_size) < this->win_size) {
             num_new_messages = fill_sliding_window(sliding_window, file, win_init_idx,
                                                     num_new_messages, current_seq, last_message_size);
         }
@@ -122,7 +122,6 @@ bool UDPServer::send_window(const int&clientfd, u_int8_t *sliding_window,
     for (int i = 0; i < this->win_size; i++) {
         current_msg_idx = (win_init_idx+i) % num_buffers;
         buffer_aux = sliding_window + bsize*current_msg_idx;
-
         if (buffer_aux[0] == MessageType::DATA) {
             if (sendto(clientfd, buffer_aux, bsize, 0, caddr_aux, caddr_len) < 0) {
                 return false;
@@ -142,17 +141,20 @@ bool UDPServer::send_window(const int&clientfd, u_int8_t *sliding_window,
 int UDPServer::fill_sliding_window(u_int8_t *sliding_window, FILE *file, const int &win_init_idx, 
                                     const int &num_new_messages, u_int8_t &current_seq, size_t &last_message_size) {
     size_t &bsize = this->buffersize, bytes_read, last_bytes_read;
-    int i = (win_init_idx + num_new_messages) % (this->win_size*2), count = 0;
-    for (; i < this->win_size*2 - num_new_messages; i++) {
-        bytes_read = fread(sliding_window + 2 + i*bsize, 1, bsize, file);
+    int cur_win_idx = (win_init_idx + num_new_messages) % (this->win_size*2), count = 0;
+    int cur_idx;
+    for (int i = 0; i < this->win_size*2 - num_new_messages; i++) {
+        cur_idx = (cur_win_idx + i) % (this->win_size*2);
+        bytes_read = fread(sliding_window + 2 + cur_idx*bsize, 1, bsize-2, file);
         if (bytes_read > 0) {
-            (sliding_window + i*bsize)[0] = MessageType::DATA;
-            (sliding_window + i*bsize)[1] = current_seq;
+            (sliding_window + cur_idx*bsize)[0] = MessageType::DATA;
+            (sliding_window + cur_idx*bsize)[1] = current_seq;
             current_seq++;
         }
         else {
             i--;
-            (sliding_window + i*bsize)[0] = MessageType::ENDTX;
+            cur_idx = (cur_win_idx + i) % (this->win_size*2);
+            (sliding_window + cur_idx*bsize)[0] = MessageType::ENDTX;
             last_message_size = last_bytes_read;
             break;
         }

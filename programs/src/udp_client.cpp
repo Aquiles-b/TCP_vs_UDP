@@ -10,7 +10,7 @@ UDPClient::UDPClient(char *addrstr, char *port)
 
     struct timeval timeout;
     // Configurando o timeout para recvfrom()
-    timeout.tv_sec = 5;
+    timeout.tv_sec = 0;
     timeout.tv_usec = 100000;  // 100.000 microssegundos = 100 milissegundos;
     if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
         perror("Error: Unable to set timeout");
@@ -75,8 +75,9 @@ int UDPClient::recv_window(u_int8_t **sliding_win) {
     int current_idx;
     int message_ordered_idx;
 
-    int i = 0;
-    for (; i < this->win_size; i++) {
+    int messages_recv = 0;
+
+    for (int i = 0; i < this->win_size; i++) {
         current_idx = (i + init_win_idx) % this->win_size;
         buf_aux = this->sliding_win_buf + current_idx*bsize;
 
@@ -92,17 +93,21 @@ int UDPClient::recv_window(u_int8_t **sliding_win) {
         if (mtype != MessageType::DATA && mtype != MessageType::ENDTX) {
             continue;
         }
-        if ((message_ordered_idx = buf_aux[1] - current_seq) < win_size) {
+        message_ordered_idx = buf_aux[1] - current_seq;
+        if (message_ordered_idx < win_size && message_ordered_idx >= 0) {
             sliding_win[message_ordered_idx] = buf_aux;
+            messages_recv++;
+        }
+        else {
+            continue;
         }
         if (mtype == MessageType::ENDTX) {
-            i++;
             break;
         }
     }
 
     int j = 0;
-    for (j = 0; j < i; j++) {
+    for (j = 0; j < messages_recv; j++) {
         if (sliding_win[j][1] != current_seq) {
             break;
         }
@@ -155,7 +160,7 @@ bool UDPClient::get_buffer_and_win_size(char *fname) {
 
 void UDPClient::init_sliding_win_buf() {
     try {
-        this->sliding_win_buf = new u_int8_t[this->win_size*(bsize+2)];
+        this->sliding_win_buf = new u_int8_t[this->win_size*bsize];
     }
     catch (std::bad_alloc &ba) {
         std::cerr << "Error: " << ba.what() << std::endl;
