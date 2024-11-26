@@ -4,6 +4,7 @@ using namespace tcp_vs_udp;
 
 UDPServer::UDPServer(const std::string& ip_address, const int& port_number) :
     BasicServer(ip_address, port_number, SOCK_STREAM), win_size{5} {
+    std::cout << "Socket opened." << std::endl;
 }
 
 UDPServer::UDPServer(const std::string& ip_address, const int& port_number, const int& win_size) :
@@ -49,10 +50,10 @@ void UDPServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
         return;
     }
 
-    u_int8_t *sliding_window, *buffer_aux, client_buf[2], client_seq, current_seq=0;
+    uint8_t *sliding_window, *buffer_aux, client_buf[2], client_seq, current_seq=0;
     size_t last_message_size = 0;
     try {
-        sliding_window = new u_int8_t[this->win_size*this->buffersize*2];
+        sliding_window = new uint8_t[this->win_size*this->buffersize*2];
     }
     catch (...) {
         std::cerr << "Error: Unable to create sliding window. " << errno << std::endl;
@@ -110,14 +111,14 @@ void UDPServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
     delete[] sliding_window;
 }
 
-bool UDPServer::send_window(const int&clientfd, u_int8_t *sliding_window,
+bool UDPServer::send_window(const int&clientfd, uint8_t *sliding_window,
                             const sockaddr_in &caddr, const int &win_init_idx, const size_t &last_message_size) {
     socklen_t caddr_len = sizeof(caddr);
     sockaddr *caddr_aux = (sockaddr *) &caddr;
     size_t &bsize = this->buffersize;
     size_t num_buffers = this->win_size*2;
     int current_msg_idx = 0;
-    u_int8_t *buffer_aux;
+    uint8_t *buffer_aux;
 
     for (int i = 0; i < this->win_size; i++) {
         current_msg_idx = (win_init_idx+i) % num_buffers;
@@ -138,8 +139,8 @@ bool UDPServer::send_window(const int&clientfd, u_int8_t *sliding_window,
     return true;
 }
 
-int UDPServer::fill_sliding_window(u_int8_t *sliding_window, FILE *file, const int &win_init_idx, 
-                                    const int &num_new_messages, u_int8_t &current_seq, size_t &last_message_size) {
+int UDPServer::fill_sliding_window(uint8_t *sliding_window, FILE *file, const int &win_init_idx, 
+                                    const int &num_new_messages, uint8_t &current_seq, size_t &last_message_size) {
     size_t &bsize = this->buffersize, bytes_read, last_bytes_read;
     int cur_win_idx = (win_init_idx + num_new_messages) % (this->win_size*2), count = 0;
     int cur_idx;

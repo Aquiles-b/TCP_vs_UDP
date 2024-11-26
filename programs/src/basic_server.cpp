@@ -49,7 +49,6 @@ void BasicServer::runParallel() {
 		sockaddr_in clientaddr;
 		socklen_t slen = sizeof(clientaddr);
 		int clientfd = accept(this->listen_socket, (sockaddr *) &clientaddr, &slen);
-		std::cout << "YAYYYYYYY!\n";
 		if (clientfd < 0) {
 			std::cerr << "Accept error." << std::endl;
 			continue;

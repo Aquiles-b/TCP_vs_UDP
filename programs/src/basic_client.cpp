@@ -24,13 +24,6 @@ BasicClient::BasicClient(int protocol, char *addrstr, char *port) {
 		perror("");
 		exit(1);
 	}
-	/*
-	if (bind(sock, (sockaddr *) &saddr, sizeof(saddr)) < 0) {
-		std::cerr << "Error at bind.\n";
-		perror("");
-		exit(1);
-	}
-	*/
 }
 
 BasicClient::~BasicClient() {

@@ -19,9 +19,7 @@ UDPClient::UDPClient(char *addrstr, char *port)
 
 int UDPClient::download(char *fname) {
     std::string filename = std::string(fname);
-
     filename = "programs/downloads/" + filename;
-
 	FILE *f = fopen(filename.c_str(), "w");
 	if (!f) {
 		std::cerr << "Error at opening file.\n";
@@ -33,7 +31,7 @@ int UDPClient::download(char *fname) {
     }
     this->init_sliding_win_buf();
 
-    u_int8_t *sliding_win[this->win_size];
+    uint8_t *sliding_win[this->win_size];
     int num_valid_messages;
     bool is_finished = false;
 
@@ -66,10 +64,10 @@ int UDPClient::download(char *fname) {
 	return 1;
 }
 
-int UDPClient::recv_window(u_int8_t **sliding_win) {
+int UDPClient::recv_window(uint8_t **sliding_win) {
     sockaddr *saddr_aux = (sockaddr*) &saddr;
     socklen_t saddr_len = sizeof(saddr);
-    u_int8_t *buf_aux, mtype;
+    uint8_t *buf_aux, mtype;
     int num_bytes_read;
 
     int current_idx;
@@ -111,7 +109,7 @@ int UDPClient::recv_window(u_int8_t **sliding_win) {
         if (sliding_win[j][1] != current_seq) {
             break;
         }
-        if (getMessageType(buf_aux) == MessageType::ENDTX) {
+        if (getMessageType(sliding_win[j]) == MessageType::ENDTX) {
             this->last_message_size = num_bytes_read;
             j++;
             break;
@@ -160,7 +158,7 @@ bool UDPClient::get_buffer_and_win_size(char *fname) {
 
 void UDPClient::init_sliding_win_buf() {
     try {
-        this->sliding_win_buf = new u_int8_t[this->win_size*bsize];
+        this->sliding_win_buf = new uint8_t[this->win_size*bsize];
     }
     catch (std::bad_alloc &ba) {
         std::cerr << "Error: " << ba.what() << std::endl;
@@ -176,13 +174,13 @@ void UDPClient::setWinSize(int win_size) {
 }
 
 void UDPClient::send_ACK() const {
-    u_int8_t buf[2];
+    uint8_t buf[2];
     buf[0] = MessageType::ACK;
     sendto(sock, buf, 2, 0, (sockaddr *) &saddr, sizeof(saddr));
 }
 
 void UDPClient::send_NACK() const {
-    u_int8_t buf[2];
+    uint8_t buf[2];
     buf[0] = MessageType::NACK;
     buf[1] = this->current_seq;
     sendto(sock, buf, 2, 0, (sockaddr *) &saddr, sizeof(saddr));

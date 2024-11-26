@@ -15,11 +15,11 @@ namespace tcp_vs_udp {
 			virtual void handleClient(int clientfd, sockaddr_in clientaddr) override;
 			virtual void sendFile(int clientfd, sockaddr_in &caddr, FILE *file) override;
 
-            bool send_window(const int&clientfd, u_int8_t *sliding_window, const sockaddr_in &caddr,
+            bool send_window(const int&clientfd, uint8_t *sliding_window, const sockaddr_in &caddr,
                                                 const int &win_init_idx, const size_t &tam_last_message);
 
-            int fill_sliding_window(u_int8_t *sliding_window, FILE *file, const int &win_init_idx, 
-                                    const int &num_new_messages, u_int8_t &current_seq, size_t &tam_last_message);
+            int fill_sliding_window(uint8_t *sliding_window, FILE *file, const int &win_init_idx, 
+                                    const int &num_new_messages, uint8_t &current_seq, size_t &tam_last_message);
 
             bool send_file_and_buffer_info(int clientfd, sockaddr_in &caddr, FILE *file, const size_t &bsize);
 
