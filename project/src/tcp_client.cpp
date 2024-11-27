@@ -7,7 +7,7 @@ TCPClient::TCPClient(char *addrstr, char *port)
 
 }
 
-int TCPClient::download(char *fname) {
+int TCPClient::download(char *fname, char *fout) {
 	uint8_t txdatabuffer[1+2*sizeof(size_t)], *dlbuffer;
 	ssize_t bytesread;
 	size_t serverbuffersize, fsize, bsize;
@@ -35,9 +35,7 @@ int TCPClient::download(char *fname) {
 		}
 	}
 
-    std::string filename = std::string(fname);
-    filename = "programs/downloads/" + filename;
-	FILE *f = fopen(filename.c_str(), "w");
+	FILE *f = fopen(fout, "w");
 	if (!f) {
 		std::cerr << "Error at opening file.\n";
 		return 0;

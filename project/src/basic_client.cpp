@@ -38,7 +38,7 @@ void BasicClient::connectToServer() {
 	}
 }
 
-int BasicClient::download(char *fname) {
+int BasicClient::download(char *fname, char *fout) {
 	std::cout << "Placeholder!\n";
 	return 1;
 }

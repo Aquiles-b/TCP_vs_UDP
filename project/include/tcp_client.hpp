@@ -7,7 +7,7 @@ namespace tcp_vs_udp {
 	class TCPClient : public BasicClient {
 		public:
 			TCPClient(char *addrstr, char *port);
-			virtual int download(char *fname) override;
+			virtual int download(char *fname, char *fout) override;
 	};
 };
 

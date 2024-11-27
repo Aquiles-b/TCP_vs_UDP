@@ -46,9 +46,7 @@ void TCPServer::handleClient(int clientfd, sockaddr_in clientaddr) {
 	char fname[256];
 	recv(clientfd, fname, sizeof(fname), 0);
 
-    std::string filename = std::string(fname);
-    filename = "programs/files/" + filename;
-	FILE *fp = fopen(filename.c_str(), "r");
+	FILE *fp = fopen(fname, "r");
 
 	if (fp == NULL) {
 		sendError(clientfd, clientaddr);

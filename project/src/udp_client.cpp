@@ -17,10 +17,8 @@ UDPClient::UDPClient(char *addrstr, char *port)
     }
 }
 
-int UDPClient::download(char *fname) {
-    std::string filename = std::string(fname);
-    filename = "programs/downloads/" + filename;
-	FILE *f = fopen(filename.c_str(), "w");
+int UDPClient::download(char *fname, char *fout) {
+	FILE *f = fopen(fout, "w");
 	if (!f) {
 		std::cerr << "Error at opening file.\n";
 		return 0;

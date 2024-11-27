@@ -1,33 +1,36 @@
 CC = g++
 CFLAGS = -Wall 
 
-SOURCES = $(shell find programs/src -name '*.cpp')
-TESTS = $(shell find programs/tests -name '*.cpp')
+SOURCES = $(shell find project/src -name '*.cpp')
+TESTS = $(shell find project/tests -name '*.cpp')
 
-OBJECTS = $(patsubst programs/src/%.cpp, programs/build/%.o, $(SOURCES))
-OBJECTS += $(patsubst programs/tests/%.cpp, programs/build/%.o, $(TESTS))
+OBJECTS = $(patsubst project/src/%.cpp, project/build/%.o, $(SOURCES))
+OBJECTS += $(patsubst project/tests/%.cpp, project/build/%.o, $(TESTS))
 
-HEADDIR=./programs/include
-HEADERS = $(shell find programs/include -name '*.hpp')
-COMMON_OBJ = $(patsubst programs/include/%.hpp, programs/build/%.o, $(HEADERS))
+HEADDIR=./project/include
+HEADERS = $(shell find project/include -name '*.hpp')
+COMMON_OBJ = $(patsubst project/include/%.hpp, project/build/%.o, $(HEADERS))
 
-TARGETS = $(patsubst programs/tests/%.cpp, programs/%.elf, $(TESTS))
+TARGETS = client server
 
 all: $(TARGETS)
 
-programs/%.elf: programs/build/%.o $(COMMON_OBJ) 
+client: project/build/client.o $(COMMON_OBJ) 
 	$(CC) $(CFLAGS) -o $@ $^
 
-programs/build/%.o: programs/tests/%.cpp
+server: project/build/server.o $(COMMON_OBJ) 
+	$(CC) $(CFLAGS) -o $@ $^
+
+project/build/%.o: project/src/%.cpp
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-programs/build/%.o: programs/src/%.cpp programs/include/%.hpp
+project/build/%.o: project/src/%.cpp project/include/%.hpp
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f programs/build/*.o
+	rm -f project/build/*.o
 
 purge: clean
-	rm -f programs/*.elf
+	rm -f $(TARGETS)

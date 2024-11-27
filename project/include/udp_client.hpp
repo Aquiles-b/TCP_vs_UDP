@@ -14,7 +14,7 @@ namespace tcp_vs_udp {
             uint8_t current_seq;
 		public:
 			UDPClient(char *addrstr, char *port);
-			virtual int download(char *fname) override;
+			virtual int download(char *fname, char *fout) override;
 
             bool get_buffer_and_win_size(char *fname);
 

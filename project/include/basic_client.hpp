@@ -22,7 +22,7 @@ namespace tcp_vs_udp {
 			void connectToServer();
             MessageType getMessageType(uint8_t *buffer);
 
-			virtual int download(char *fname);
+			virtual int download(char *fname, char *fout);
 		private:
 
 

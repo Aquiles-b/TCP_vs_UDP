@@ -29,10 +29,7 @@ void UDPServer::handleClient(int clientfd, sockaddr_in clientaddr) {
         return;
     }
 
-    std::string filename = std::string(fname);
-    filename = "programs/files/" + filename;
-
-	FILE *fp = fopen(filename.c_str(), "r");
+	FILE *fp = fopen(fname, "r");
 	if (fp == NULL) {
 		sendError(clientfd, clientaddr);
 	}
