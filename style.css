@@ -87,3 +87,43 @@ section {
 	margin: 15px 0;
 	border-radius: 5px;
 }
+
+.tab-log thead {
+	background-color: var(--color3);
+	color: white;
+	text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.7);
+	font-weight: bold;
+} 
+
+.tab-log th:not(:first-child), .tab-log td:not(:first-child) {
+	text-align: center;
+}
+
+.tab-log th:first-child, .tab-log td:first-child {
+	text-align: right;
+}
+
+.tab-log tbody tr:nth-child(odd) {
+	background-color: var(--color4);
+}
+
+.tab-log tbody tr:nth-child(even) {
+	background-color: var(--color5);
+}
+
+.tab-log tr * {
+	padding: 5px;
+}
+
+.tab-log {
+    border-collapse: collapse;
+    width: 100%;
+    border: 2px solid var(--color3); 
+}
+
+.tab-log th,
+.tab-log td {
+    border: 1px solid var(--color3);
+    padding: 8px;
+    text-align: left;
+}

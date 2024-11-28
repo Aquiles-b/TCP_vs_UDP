@@ -54,24 +54,25 @@
 			<pre>
 project/
 ├── include
-│   ├── <a href="project/include/basic_client.hpp">basic_client.hpp</a>
-│   ├── <a href="project/include/basic_server.hpp">basic_server.hpp</a>
-│   ├── <a href="project/include/protocol.h">protocol.h</a>
-│   ├── <a href="project/include/tcp_client.hpp">tcp_client.hpp</a>
-│   ├── <a href="project/include/tcp_server.hpp">tcp_server.hpp</a>
-│   ├── <a href="project/include/udp_client.hpp">udp_client.hpp</a>
-│   └── <a href="project/include/udp_server.hpp">udp_server.hpp</a>
+│   ├── <a target="_blank" href="project/include/basic_client.hpp">basic_client.hpp</a>
+│   ├── <a target="_blank" href="project/include/basic_server.hpp">basic_server.hpp</a>
+│   ├── <a target="_blank" href="project/include/protocol.h">protocol.h</a>
+│   ├── <a target="_blank" href="project/include/tcp_client.hpp">tcp_client.hpp</a>
+│   ├── <a target="_blank" href="project/include/tcp_server.hpp">tcp_server.hpp</a>
+│   ├── <a target="_blank" href="project/include/udp_client.hpp">udp_client.hpp</a>
+│   └── <a target="_blank" href="project/include/udp_server.hpp">udp_server.hpp</a>
 └── src
-		├── <a href="project/src/basic_client.cpp">basic_client.cpp</a>
-		├── <a href="project/src/basic_server.cpp">basic_server.cpp</a>
-		├── <a href="project/src/client.cpp">client.cpp</a>
-		├── <a href="project/src/server.cpp">server.cpp</a>
-		├── <a href="project/src/tcp_client.cpp">tcp_client.cpp</a>
-		├── <a href="project/src/tcp_server.cpp">tcp_server.cpp</a>
-		├── <a href="project/src/udp_client.cpp">udp_client.cpp</a>
-		└── <a href="project/src/udp_server.cpp">udp_server.cpp</a>
+		├── <a target="_blank" href="project/src/basic_client.cpp">basic_client.cpp</a>
+		├── <a target="_blank" href="project/src/basic_server.cpp">basic_server.cpp</a>
+		├── <a target="_blank" href="project/src/client.cpp">client.cpp</a>
+		├── <a target="_blank" href="project/src/server.cpp">server.cpp</a>
+		├── <a target="_blank" href="project/src/tcp_client.cpp">tcp_client.cpp</a>
+		├── <a target="_blank" href="project/src/tcp_server.cpp">tcp_server.cpp</a>
+		├── <a target="_blank" href="project/src/udp_client.cpp">udp_client.cpp</a>
+		└── <a target="_blank" href="project/src/udp_server.cpp">udp_server.cpp</a>
 			</pre>
 			<p>Os arquivos <tt>client.cpp</tt> e <tt>server.cpp</tt> contém as implementações da interface de linha de comando do cliente e servidor, respectivamente. O arquivo <tt>protocol.h</tt> contém definições utilizadas tanto pelo cliente quanto pelo servidor, servindo como um arquivo comum apenas para definição de um enum.</p>
+			<p>O código também está disponível no <a target="_blank" href="https://github.com/Aquiles-b/TCP_vs_UDP">GitHub</a></p>
 		</section>
 		<section>
 			<h2>Testes</h2>
@@ -97,33 +98,31 @@ project/
 					<h3>Estrutura de diretórios</h3>
 			<p>Cada teste vai gerar logs salvos no diretório <tt>logs/</tt> com a seguinte estrutura:</p>
 			<pre>
-logs/
-	server/
-rede_externa/
-	TCP/
-	UDP/
-rede_local/
-	TCP/
-		iter_8192.txt
-		par_4096.txt
-	UDP/
-		iter_8192_8.txt
-		par_4096_15.txt
-	client/
-rede_externa/
-	TCP/
-	UDP/
-rede_local/
-	TCP/
-		iter_1.csv
-		iter_2.csv
-		par_1.csv
-		par_2.csv
-	UDP/
-		iter_1.csv
-		iter_2.csv
-		par_1.csv
-		par_2.csv
+logs
+├── client
+│   ├── rede_externa
+│   │   ├── TCP
+│   │   └── UDP
+│   └── rede_local
+│       ├── TCP
+│       │   ├── iter_1.csv
+│       │   ├── iter_2.csv
+│       │   ├── par_1.csv
+│       │   └── par_2.csv
+│       └── UDP
+│           ├── iter_1.csv
+│           └── iter_2.csv
+└── server
+		├── rede_externa
+		│   ├── TCP
+		│   └── UDP
+		└── rede_local
+				├── TCP
+				│   ├── iter_8192.txt
+				│   └── par_4096.txt
+				└── UDP
+						├── iter_8192_8.txt
+						└── par_4096_15.txt
 			</pre>
 			<h4>Logs server</h4>
 			<p>
@@ -140,101 +139,101 @@ rede_local/
 				<tt>par_N.csv</tt> é a conexão de N clientes com um servidor paralelo.
 			</p>
 			<p>Cada arquivo <tt>csv</tt> terá a seguinte estrutura:</p>
-			<table>
+			<table class="tab-log">
 				<thead>
 					<tr>
-						<th style="text-align:right;">Tam arquivo</th>
-						<th style="text-align:center;">Perda de pacotes</th>
-						<th style="text-align:center;">Tempo de download</th>
-						<th style="text-align:center;">Sha256sum</th>
+						<th>Tam arquivo</th>
+						<th>Perda de pacotes</th>
+						<th>Tempo de download</th>
+						<th>Sha256sum</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
-						<td style="text-align:right;">1MB</td>
-						<td style="text-align:center;">c1_x0</td>
-						<td style="text-align:center;">c1_y0</td>
-						<td style="text-align:center;">1</td>
+						<td>1MB</td>
+						<td>c1_x0</td>
+						<td>c1_y0</td>
+						<td>1</td>
 					</tr>
 					<tr>
-						<td style="text-align:right;">10MB</td>
-						<td style="text-align:center;">c1_x1</td>
-						<td style="text-align:center;">c1_y1</td>
-						<td style="text-align:center;">1</td>
+						<td>10MB</td>
+						<td>c1_x1</td>
+						<td>c1_y1</td>
+						<td>1</td>
 					</tr>
 					<tr>
-						<td style="text-align:right;">100MB</td>
-						<td style="text-align:center;">c1_x2</td>
-						<td style="text-align:center;">c1_y2</td>
-						<td style="text-align:center;">1</td>
+						<td>100MB</td>
+						<td>c1_x2</td>
+						<td>c1_y2</td>
+						<td>1</td>
 					</tr>
 					<tr>
-						<td style="text-align:right;">1GB</td>
-						<td style="text-align:center;">c1_x3</td>
-						<td style="text-align:center;">c1_y3</td>
-						<td style="text-align:center;">1</td>
+						<td>1GB</td>
+						<td>c1_x3</td>
+						<td>c1_y3</td>
+						<td>1</td>
 					</tr>
 				</tbody>
 			</table>
 			<p>Onde cada linha é uma transmissão de arquivo para um cliente <tt>cn</tt></p>
 			<p>Exemplo de arquivo <tt>csv</tt> gerado de um teste com 2 clientes:</p>
-			<table>
+			<table class="tab-log">
 				<thead>
 					<tr>
-						<th style="text-align:right;">Tam arquivo</th>
-						<th style="text-align:center;">Perda de pacotes</th>
-						<th style="text-align:center;">Tempo de download</th>
-						<th style="text-align:center;">Sha256sum</th>
+						<th>Tam arquivo</th>
+						<th>Perda de pacotes</th>
+						<th>Tempo de download</th>
+						<th>Sha256sum</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
-						<td style="text-align:right;">1MB</td>
-						<td style="text-align:center;">c1_x0</td>
-						<td style="text-align:center;">c1_y0</td>
-						<td style="text-align:center;">1</td>
+						<td>1MB</td>
+						<td>c1_x0</td>
+						<td>c1_y0</td>
+						<td>1</td>
 					</tr>
 					<tr>
-						<td style="text-align:right;">1MB</td>
-						<td style="text-align:center;">c2_a0</td>
-						<td style="text-align:center;">c2_b0</td>
-						<td style="text-align:center;">1</td>
+						<td>1MB</td>
+						<td>c2_a0</td>
+						<td>c2_b0</td>
+						<td>1</td>
 					</tr>
 					<tr>
-						<td style="text-align:right;">10MB</td>
-						<td style="text-align:center;">c1_x1</td>
-						<td style="text-align:center;">c1_y1</td>
-						<td style="text-align:center;">1</td>
+						<td>10MB</td>
+						<td>c1_x1</td>
+						<td>c1_y1</td>
+						<td>1</td>
 					</tr>
 					<tr>
-						<td style="text-align:right;">10MB</td>
-						<td style="text-align:center;">c2_a1</td>
-						<td style="text-align:center;">c2_b1</td>
-						<td style="text-align:center;">1</td>
+						<td>10MB</td>
+						<td>c2_a1</td>
+						<td>c2_b1</td>
+						<td>1</td>
 					</tr>
 					<tr>
-						<td style="text-align:right;">100MB</td>
-						<td style="text-align:center;">c1_x2</td>
-						<td style="text-align:center;">c1_y2</td>
-						<td style="text-align:center;">1</td>
+						<td>100MB</td>
+						<td>c1_x2</td>
+						<td>c1_y2</td>
+						<td>1</td>
 					</tr>
 					<tr>
-						<td style="text-align:right;">100MB</td>
-						<td style="text-align:center;">c2_a2</td>
-						<td style="text-align:center;">c2_b2</td>
-						<td style="text-align:center;">1</td>
+						<td>100MB</td>
+						<td>c2_a2</td>
+						<td>c2_b2</td>
+						<td>1</td>
 					</tr>
 					<tr>
-						<td style="text-align:right;">1GB</td>
-						<td style="text-align:center;">c1_x3</td>
-						<td style="text-align:center;">c1_y3</td>
-						<td style="text-align:center;">1</td>
+						<td>1GB</td>
+						<td>c1_x3</td>
+						<td>c1_y3</td>
+						<td>1</td>
 					</tr>
 					<tr>
-						<td style="text-align:right;">1GB</td>
-						<td style="text-align:center;">c2_a3</td>
-						<td style="text-align:center;">c2_b3</td>
-						<td style="text-align:center;">1</td>
+						<td>1GB</td>
+						<td>c2_a3</td>
+						<td>c2_b3</td>
+						<td>1</td>
 					</tr>
 				</tbody>
 			</table>
