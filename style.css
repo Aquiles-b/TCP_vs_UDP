@@ -8,16 +8,82 @@
 }
 
 :root {
-	--color1: #141622;
-	--color2: #272935;
-	--color3: #FFFFFF;
-	--color4: #F76497;
-	--color5: #12537E;
+	--color1: #102540;
+	--color2: #0A1626;
+	--color3: #2469A6;
+	--color4: #3DADD9;
+	--color5: #6CC5D9;
 }
 
 * {
 	margin: 0;
 	padding: 0;
-	color: white;
 	font-family: "Ubuntu", Arial, sans-serif;
+}
+
+pre, tt{
+	font-family: monospace;
+	background-color: lightgray;
+	padding: 2px;
+	border-radius: 4px;
+}
+
+pre {
+	padding: 5px;
+	tab-size: 2;
+}
+
+pre a {
+	font-family: monospace;
+}
+
+p tt {
+	padding: 2px 1px;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	background-color: var(--color1);
+}
+
+header {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	background-color: var(--color2);
+	width: 100%;
+	padding: 10px;
+	font-size: 22px;
+	color: white;
+	text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.7);
+}
+
+main {
+	margin: 10px auto;
+	max-width: 1000px;
+	background-color: var(--color3);
+	padding: 40px;
+	border-radius: 10px;
+}
+
+p {
+	margin: 7px 0;
+	text-align: justify;
+}
+
+li {
+	list-style-position: inside;
+}
+
+h2 {
+	margin-bottom: 10px;
+}
+
+section {
+	background-color: rgb(255, 255, 255);
+	padding: 10px;
+	margin: 15px 0;
+	border-radius: 5px;
 }
