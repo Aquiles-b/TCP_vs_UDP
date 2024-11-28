@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>TCP vs UDP</title>
+</head>
+<body>
+	<header>
+		<h1>TCP vs UDP</h1>
+	</header>
+	<main>
+		<h2>Comunicação</h2>
+		<ol>
+			<li>Cliente inicia conexão com servidor</li>
+			<li>Cliente envia o nome do arquivo que deseja baixar (max 256 bytes)</li>
+			<li>Servidor abre o arquivo</li>
+			<li>Servidor envia mensagem com tamanho do arquivo, tamanho do buffer de transmissão e tamanho de janela no caso do UDP.</li>
+			<li>Cliente recebe dados de transmissão, aloca buffer e se prepara para receber dados</li>
+			<li>Servidor envia dados do arquivo para o cliente</li>
+			<li>Servidor encerra conexão</li>
+			<li>Cliente fecha arquivo</li>
+		</ol>
+		<p>O servidor TCP pode funcionar de tanto de forma iterativa, quanto de forma paralela com a criação de uma thread para lidar com cada cliente novo. Já o servidor UDP funciona somente de forma iterativa, mas foi considerado fazer de forma paralela por meio da criação de sockets utilizando outras portas e um socket que imita um socket em modo de escuta TCP, que iria redirecionar os clientes para outra porta e possibilitando o envio de arquivos de forma paralela por meio de outras threads, entretanto por conta da complexidade, essa ideia foi deixada de lado.</p>
+		<h2>Arquivos</h2>
+		<ul>
+			<li>Servidor guarda os arquivos no diretório <tt>files</tt>, utilizando ele como raíz para procura de arquivos.</li>
+			<li>Cliente salva os arquivos baixados no diretório <tt>downloads</tt>.</li>
+		</ul>
+
+		<h2>Utilização</h2>
+		<p>Para compilar o código, basta rodar o comando <tt>make</tt>, desde que o Makefile e g++ estejam instalados.</p>
+		<p>Para rodar o servidor:</p>
+		<tt class="bash">./server</tt>
+
+		<h2>Testes</h2>
+
+		<p>Os mesmos testes para servidor iterativo serão feitos para servidor paralelo.</p>
+
+		<p>Dois tipos de teste:</p>
+		<ul>
+			<li>Rede local </li>
+			<li>Passando pela internet (Usando LAN virtual/radmin)</li>
+		</ul>
+
+		<p>Cada teste é feito com base no número de clientes:</p>
+		<ul>
+			<li>O número de clientes começa em 1 e vai dobrando até 64.</li>
+			<li>Cada cliente faz uma transferência de arquivos de 1MB, 10MB, 100MB e 1GB</li>
+			<li>Os dados de cada teste são salvos em um arquivo CSV</li>
+		</ul>
+
+		<p>Para cada teste, será analisado as métricas:</p>
+		<ul>
+			<li>Perda de pacotes</li>
+			<li>Tempo de download</li>
+			<li>sha256sum do arquivo baixado</li>
+		</ul>
+
+ 		<h3>Estrutura de diretórios</h3>
+		<p>Cada teste vai gerar logs salvos no diretório `logs/` com a seguinte estrutura:</p>
+		<pre>
+logs/
+	server/
+		rede_externa/
+			TCP/
+			UDP/
+		rede_local/
+			TCP/
+				iter_8192.txt
+				par_4096.txt
+			UDP/
+				iter_8192_8.txt
+				par_4096_15.txt
+	client/
+		rede_externa/
+			TCP/
+			UDP/
+		rede_local/
+			TCP/
+				iter_1.csv
+				iter_2.csv
+				par_1.csv
+				par_2.csv
+			UDP/
+				iter_1.csv
+				iter_2.csv
+				par_1.csv
+				par_2.csv
+		</pre>
+		<h4>Logs server</h4>
+		<p>
+			Onde <tt>iter_8192.txt</tt> é o log do servidor TCP iterativo com tamanho de buffer igual a 8192 bytes. Enquanto
+			<tt>par_N.txt</tt> é o log do servidor TCP paralelo com tamanho de buffer N bytes.
+		</p>
+
+		<p>
+			Para o UDP, é a mesma coisa com a adição do tamanho da janela no final do nome. Por exemplo,
+			<tt>iter_N_M.txt</tt> é o servidor UDP iterativo com tamanho de buffer igual a N bytes e tamanho de janela M. Como não há implementação do servidor UDP "paralelo", não há logs em paralelo para o UDP.
+		</p>
+
+		<h4>Logs client</h4>
+		<p>
+			<tt>iter_N.csv</tt> é o log da conexão de N clientes com um servidor iterativo. Enquanto
+			<tt>par_N.csv</tt> é a conexão de N clientes com um servidor paralelo.
+		</p>
+
+		<p>Cada arquivo <tt>csv</tt> terá a seguinte estrutura:</p>
+		<table>
+			<thead>
+				<tr>
+					<th style="text-align:right;">Tam arquivo</th>
+					<th style="text-align:center;">Perda de pacotes</th>
+					<th style="text-align:center;">Tempo de download</th>
+					<th style="text-align:center;">Sha256sum</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td style="text-align:right;">1MB</td>
+					<td style="text-align:center;">c1_x0</td>
+					<td style="text-align:center;">c1_y0</td>
+					<td style="text-align:center;">1</td>
+				</tr>
+				<tr>
+					<td style="text-align:right;">10MB</td>
+					<td style="text-align:center;">c1_x1</td>
+					<td style="text-align:center;">c1_y1</td>
+					<td style="text-align:center;">1</td>
+				</tr>
+				<tr>
+					<td style="text-align:right;">100MB</td>
+					<td style="text-align:center;">c1_x2</td>
+					<td style="text-align:center;">c1_y2</td>
+					<td style="text-align:center;">1</td>
+				</tr>
+				<tr>
+					<td style="text-align:right;">1GB</td>
+					<td style="text-align:center;">c1_x3</td>
+					<td style="text-align:center;">c1_y3</td>
+					<td style="text-align:center;">1</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<p>Onde cada linha é uma transmissão de arquivo para um cliente `cn`</p>
+
+		<p>Exemplo de arquivo `csv` gerado de um teste com 2 clientes:</p>
+		<table>
+			<thead>
+				<tr>
+					<th style="text-align:right;">Tam arquivo</th>
+					<th style="text-align:center;">Perda de pacotes</th>
+					<th style="text-align:center;">Tempo de download</th>
+					<th style="text-align:center;">Sha256sum</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td style="text-align:right;">1MB</td>
+					<td style="text-align:center;">c1_x0</td>
+					<td style="text-align:center;">c1_y0</td>
+					<td style="text-align:center;">1</td>
+				</tr>
+				<tr>
+					<td style="text-align:right;">1MB</td>
+					<td style="text-align:center;">c2_a0</td>
+					<td style="text-align:center;">c2_b0</td>
+					<td style="text-align:center;">1</td>
+				</tr>
+				<tr>
+					<td style="text-align:right;">10MB</td>
+					<td style="text-align:center;">c1_x1</td>
+					<td style="text-align:center;">c1_y1</td>
+					<td style="text-align:center;">1</td>
+				</tr>
+				<tr>
+					<td style="text-align:right;">10MB</td>
+					<td style="text-align:center;">c2_a1</td>
+					<td style="text-align:center;">c2_b1</td>
+					<td style="text-align:center;">1</td>
+				</tr>
+				<tr>
+					<td style="text-align:right;">100MB</td>
+					<td style="text-align:center;">c1_x2</td>
+					<td style="text-align:center;">c1_y2</td>
+					<td style="text-align:center;">1</td>
+				</tr>
+				<tr>
+					<td style="text-align:right;">100MB</td>
+					<td style="text-align:center;">c2_a2</td>
+					<td style="text-align:center;">c2_b2</td>
+					<td style="text-align:center;">1</td>
+				</tr>
+				<tr>
+					<td style="text-align:right;">1GB</td>
+					<td style="text-align:center;">c1_x3</td>
+					<td style="text-align:center;">c1_y3</td>
+					<td style="text-align:center;">1</td>
+				</tr>
+				<tr>
+					<td style="text-align:right;">1GB</td>
+					<td style="text-align:center;">c2_a3</td>
+					<td style="text-align:center;">c2_b3</td>
+					<td style="text-align:center;">1</td>
+				</tr>
+			</tbody>
+		</table>
+	</main>
+
+</body>
+</html>
