@@ -2,8 +2,9 @@
 
 using namespace tcp_vs_udp;
 
-BasicServer::BasicServer(const std::string& ip_address, const int& port_number, const int& socket_type)
-	: buffersize{1024} {
+BasicServer::BasicServer(const std::string& ip_address, const int& port_number, const int& socket_type,
+            const size_t &buffersize)
+	: buffersize{buffersize} {
     this->listen_socket = socket(AF_INET, socket_type, 0);
     if (this->listen_socket < 0) {
         std::cerr << "Error: Unable to open socket." << std::endl;
@@ -25,67 +26,33 @@ BasicServer::BasicServer(const std::string& ip_address, const int& port_number, 
         exit(1);
     }
 
-    if (listen(this->listen_socket, 5) < 0) {
-        std::cerr << "Error listening on the port " << port_number << std::endl;
-        exit(1);
-	}
+    if (socket_type == SOCK_STREAM) {
+        if (listen(this->listen_socket, 5) < 0) {
+            std::cerr << "Error listening on the port " << port_number << std::endl;
+            exit(1);
+        }
+    }
+    std::cout << "Server opened on port " << port_number << std::endl;
+    std::cout << "Buffer size: " << this->buffersize << std::endl;
 }
 
 BasicServer::~BasicServer() {
     close(this->listen_socket);
-    std::cout << "Socket closed." << std::endl;
+    std::cout << "Server closed." << std::endl;
 }
 
-void BasicServer::handleClient(int clientfd, sockaddr_in clientaddr) {
-	std::cout << "Yaaaaaaaaaaay!\n";
-}
-
-void BasicServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
-	std::cout << "Wooooooooooow!\n";
-}
-
-void BasicServer::runParallel() {
-	while (true) {
-		sockaddr_in clientaddr;
-		socklen_t slen = sizeof(clientaddr);
-		int clientfd = accept(this->listen_socket, (sockaddr *) &clientaddr, &slen);
-		if (clientfd < 0) {
-			std::cerr << "Accept error." << std::endl;
-			continue;
-		}
-		this->client_threadlock.lock();
-		this->client_threads[clientfd] = std::thread([this, clientfd, clientaddr]() {
-    		this->handleClient(clientfd, clientaddr);
-			this->client_threadlock.lock();
-			this->client_threads.erase(clientfd);
-			this->client_threadlock.unlock();
-		});
-		this->client_threadlock.unlock();
-		this->client_threads[clientfd].detach();
-	}
-}
-
-void BasicServer::runIterative() {
-	while (true) {
-		sockaddr_in clientaddr;
-		socklen_t slen = sizeof(clientaddr);
-		int clientfd = accept(this->listen_socket, (sockaddr *) &clientaddr, &slen);
-		if (clientfd < 0) {
-			std::cerr << "Accept error." << std::endl;
-			continue;
-		}
-	   	this->handleClient(clientfd, clientaddr);
-	}
+bool BasicServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
+    return false;
 }
 
 int BasicServer::sendError(int clientfd, sockaddr_in &caddr) const {
-	uint8_t error = ERROR;
-	ssize_t ret;
-	ret = sendto(clientfd, &error, sizeof(error), 0, (sockaddr *) &caddr, sizeof(caddr));
-	
-	return ret;
+    uint8_t error = MessageType::ERROR;
+    ssize_t ret;
+    ret = sendto(clientfd, &error, sizeof(error), 0, (sockaddr *) &caddr, sizeof(caddr));
+
+    return ret;
 }
 
 void BasicServer::setBufferSize(size_t buffersize) {
-	this->buffersize = buffersize;
+    this->buffersize = buffersize;
 }

@@ -7,7 +7,7 @@ namespace tcp_vs_udp {
 	class UDPClient : public BasicClient {
         private:
             int win_size;
-            int init_win_idx;
+            unsigned int init_win_idx;
             uint8_t *sliding_win_buf;
             size_t bsize;
             size_t last_message_size;

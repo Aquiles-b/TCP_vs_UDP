@@ -10,14 +10,16 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 	std::unique_ptr<BasicClient> c;
-	if (strcmp("tcp", argv[3]) == 0)
+	if (strcmp("tcp", argv[3]) == 0) { 
 		c = std::make_unique<TCPClient>(argv[1], argv[2]);
+        c->connectToServer();
+        c->download(argv[4], argv[5]);
+    }
 	else {
 		c = std::make_unique<UDPClient>(argv[1], argv[2]);
+        c->download(argv[4], argv[5]);
 	}
 
-	c->connectToServer();
-	c->download(argv[4], argv[5]);
 
 	return 0;
 }

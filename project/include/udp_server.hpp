@@ -9,12 +9,17 @@ namespace tcp_vs_udp {
             int win_size;
 
         public:
-            UDPServer(const std::string& ip_address, const int& port_number);
-            UDPServer(const std::string& ip_address, const int& port_number, const int& win_size);
+            UDPServer(const std::string& ip_address, const int& port_number, 
+                                const size_t& buffersize, const int& win_size);
 
-			virtual void handleClient(int clientfd, sockaddr_in clientaddr) override;
-			virtual void sendFile(int clientfd, sockaddr_in &caddr, FILE *file) override;
+			void runIterative();
 
+            void setWinSize(int win_size);
+
+        protected:
+			virtual bool sendFile(int clientfd, sockaddr_in &caddr, FILE *file) override;
+
+        private:
             bool send_window(const int&clientfd, uint8_t *sliding_window, const sockaddr_in &caddr,
                                                 const int &win_init_idx, const size_t &tam_last_message);
 
@@ -22,10 +27,6 @@ namespace tcp_vs_udp {
                                     const int &num_new_messages, uint8_t &current_seq, size_t &tam_last_message);
 
             bool send_file_and_buffer_info(int clientfd, sockaddr_in &caddr, FILE *file, const size_t &bsize);
-
-            void setWinSize(size_t win_size);
-
-        private:
 
     };
 }

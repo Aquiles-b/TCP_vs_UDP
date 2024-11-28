@@ -1,11 +1,9 @@
 #include "../include/udp_client.hpp"
-#include <cstdio>
-#include <sys/socket.h>
 
 using namespace tcp_vs_udp;
 
 UDPClient::UDPClient(char *addrstr, char *port) 
-	: BasicClient(SOCK_STREAM, addrstr, port), win_size{5}, init_win_idx{0}, bsize{4096}, 
+	: BasicClient(SOCK_DGRAM, addrstr, port), win_size{5}, init_win_idx{0}, bsize{4096}, 
     last_message_size{0}, current_seq{0} {
 
     struct timeval timeout;
@@ -87,9 +85,9 @@ int UDPClient::recv_window(uint8_t **sliding_win) {
         }
         mtype = getMessageType(buf_aux);
         if (mtype != MessageType::DATA && mtype != MessageType::ENDTX) {
-            continue;
+            return -1;
         }
-        message_ordered_idx = buf_aux[1] - current_seq;
+        message_ordered_idx = (uint8_t)(buf_aux[1] - current_seq);
         if (message_ordered_idx < win_size && message_ordered_idx >= 0) {
             sliding_win[message_ordered_idx] = buf_aux;
             messages_recv++;
@@ -103,7 +101,7 @@ int UDPClient::recv_window(uint8_t **sliding_win) {
     }
 
     int j = 0;
-    for (j = 0; j < messages_recv; j++) {
+    for (j = 0; j <= messages_recv; j++) {
         if (sliding_win[j][1] != current_seq) {
             break;
         }
@@ -122,8 +120,11 @@ bool UDPClient::get_buffer_and_win_size(char *fname) {
 	size_t fsize;
 	MessageType mtype;
 
-	if (sendto(sock, fname, strnlen(fname, max_fname_size) + 1, 0, 
-                                    (sockaddr *) &saddr, sizeof(saddr)) < 0) {
+    char msg[max_fname_size+1];
+    msg[0] = MessageType::TXDATA;
+    strncpy(msg+1, fname, max_fname_size);
+
+	if (sendto(sock, msg, max_fname_size+1, 0, (sockaddr *) &saddr, sizeof(saddr)) < 0) {
         std::cerr << "Error: sendto: " << errno << std::endl;
     }
     socklen_t saddr_len = sizeof(saddr);
@@ -158,8 +159,8 @@ void UDPClient::init_sliding_win_buf() {
     try {
         this->sliding_win_buf = new uint8_t[this->win_size*bsize];
     }
-    catch (std::bad_alloc &ba) {
-        std::cerr << "Error: " << ba.what() << std::endl;
+    catch (...) {
+        std::cerr << "Error: " << errno << std::endl;
         exit(1);
     }
     last_message_size = 0;

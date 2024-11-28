@@ -2,7 +2,6 @@
 #define _BASIC_CLIENT_H_
 
 #include <iostream>
-#include <string>
 #include <cstring>
 #include <arpa/inet.h>
 #include <sys/socket.h>
