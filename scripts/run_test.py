@@ -110,6 +110,18 @@ def run_tcp_client(clientid: int, filesize: str, result: dict):
 	csum = calculate_sha256(f"downloads/{clientid}/{filesize}.bin")
 	result["csum"] = csum == checksums[filesize] # True se os checksums baterem e falso caso contrário
 
+def run_udp_client(clientid: int, filesize: str, result: dict):
+	global http_ip, file_server_port, checksums
+	start_time = time.time()
+	process = subprocess.Popen(["sh", "-c", f"./client {http_ip} {file_server_port} udp files/{filesize}.bin downloads/{clientid}/{filesize}.bin"])
+	if (process.wait() != 0):
+		print("Error on client process!\n")
+		return
+	end_time = time.time()
+	result["time"] = end_time - start_time
+	result["filesize"] = filesize
+	csum = calculate_sha256(f"downloads/{clientid}/{filesize}.bin")
+	result["csum"] = csum == checksums[filesize] # True se os checksums baterem e falso caso contrário
 
 def run_test_tcp(clientnum: int, interval: float, filesize: str, servermode: str, localnet: bool, buffersize: int):
 	threads: list[threading.Thread] = []
@@ -129,16 +141,25 @@ def run_test_tcp(clientnum: int, interval: float, filesize: str, servermode: str
 	results["total_time"] = total_time
 	netdir ='rede_local' if localnet else 'rede_externa'
 	save_results_to_csv(results, f"logs/client/{netdir}/TCP/{servermode}_{clientnum}_{buffersize}.csv")
-'''
-{
-	clientid: {
-		"filesize": str,
-		"tempo": float,
-		"csum": bool
-	}
-	"tempo_total": float
-}
-'''
+
+def run_test_udp(clientnum: int, interval: float, filesize: str, winsize: int, localnet: bool, buffersize: int):
+	threads: list[threading.Thread] = []
+	results = dict()
+	start_time = time.time()
+	for i in range(clientnum):
+		results[i] = dict()
+		t = threading.Thread(target=run_udp_client, args=(i, filesize, results[i]))
+		threads.append(t)
+		t.start()
+		time.sleep(interval)
+	
+	for t in threads:
+		t.join()
+	end_time = time.time()
+	total_time = end_time - start_time
+	results["total_time"] = total_time
+	netdir ='rede_local' if localnet else 'rede_externa'
+	save_results_to_csv(results, f"logs/client/{netdir}/UDP/iter_{clientnum}_{buffersize}_{winsize}.csv")
 
 if __name__ == "__main__":
 	if len(sys.argv) != 4:
@@ -148,8 +169,9 @@ if __name__ == "__main__":
 	http_port = sys.argv[2]
 	local_net = bool(sys.argv[3])
 	buffersizes = [1024, 4096, 16384, 16384*3]
-	clientnum = [1, 2, 4, 8]
-	udpwindow = [1, 4, 16, 64, 256]
+	# clientnum = [1, 2, 4, 8]
+	clientnum = [1]
+	udpwindow = [4, 16, 64, 256]
 	timeintervals = [0]
 	filesizes = ["1MB", "10MB", "100MB"]
 	for fsize in filesizes:
@@ -165,6 +187,7 @@ if __name__ == "__main__":
 	start_time = time.time()
 	print(f"Realizando testes TCP")
 	for servermode in ["iter", "par"]:
+		break
 		for bsize in buffersizes:
 			file_server_port += 1 # Utiliza portas diferentes para o servidor (evita erro de bind)
 			print(f"Iniciando servidor: {http_ip}:{file_server_port} TCP com buffer de {bsize}B no modo {servermode}")
@@ -174,6 +197,18 @@ if __name__ == "__main__":
 				for tinter in timeintervals:
 					for fsize in filesizes:
 						run_test_tcp(cnum, tinter, fsize, servermode, local_net, bsize)
+	for winsize in udpwindow:
+		for bsize in buffersizes:
+			file_server_port += 1 # Utiliza portas diferentes para o servidor (evita erro de bind)
+			print(f"Iniciando servidor: {http_ip}:{file_server_port} UDP com buffer de {bsize}B com janela de {winsize} segmentos")
+			init_server(file_server_port, "udp", bsize, winsize, local_net)
+			break
+			print("Servidor iniciado")
+			for cnum in clientnum:
+				for tinter in timeintervals:
+					for fsize in filesizes:
+						run_test_udp(cnum, tinter, fsize, winsize, local_net, bsize)
+		break
 	end_time = time.time()
 
 
