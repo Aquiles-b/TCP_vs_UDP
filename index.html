@@ -47,7 +47,7 @@
 
 		<section>
 			<h2>Implementação</h2>
-			<p>A implementação da comunicação sobre TCP não há nada de especial, o servidor começa a transmitir a sequência de bytes do arquivo para o cliente, e o próprio protocolo cuida do controle de fluxo, sequencialização, etc. Entretanto, no UDP foi implementado o controle de fluxo por meio de janelas deslizantes, sequencialização e confirmação de mensagens.</p>
+			<p>Tanto o servidor quanto o cliente foram implementados na linguagem C++ utilizando a interface de sockets padrão da linguagem em ambientes Linux. A implementação da comunicação sobre TCP não há nada de especial, o servidor começa a transmitir a sequência de bytes do arquivo para o cliente, e o próprio protocolo cuida do controle de fluxo, sequencialização, etc. Entretanto, no UDP foi implementado o controle de fluxo por meio de janelas deslizantes, sequencialização e confirmação de mensagens.</p>
 			<h3>Diagrama de Classes do Projeto</h3>
 			<img src="files/class-diag.png" alt="Diagrama de classes UML" style="width: 100%;">
 			<h3>Código-fonte</h3>
