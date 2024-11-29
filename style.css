@@ -13,6 +13,7 @@
 	--color3: #2469A6;
 	--color4: #3DADD9;
 	--color5: #6CC5D9;
+	--hover-color: #1EC98E;
 }
 
 * {
@@ -126,4 +127,9 @@ section {
     border: 1px solid var(--color3);
     padding: 8px;
     text-align: left;
+}
+
+.tab-log tbody tr:hover {
+	background-color: var(--hover-color);
+	transition: background-color 0.3s ease;
 }
