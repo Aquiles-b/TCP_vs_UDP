@@ -103,9 +103,12 @@ section {
 .tab-log th:first-child, .tab-log td:first-child {
 	text-align: right;
 }
-
 .tab-log tbody tr:nth-child(odd) {
 	background-color: var(--color4);
+}
+
+.tab-log tbody tr {
+	transition: background-color 0.3s ease;
 }
 
 .tab-log tbody tr:nth-child(even) {
