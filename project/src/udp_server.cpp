@@ -34,7 +34,7 @@ bool UDPServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
         return false;
     }
 
-    sockaddr *cadd_aux = (sockaddr *) &caddr;
+	sockaddr_in caddraux;
     socklen_t cadd_len = sizeof(caddr);
     size_t &bsize = this->buffersize;
 
@@ -56,15 +56,25 @@ bool UDPServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
         }
 
         // Recebe resposta do client
-        if (recvfrom(clientfd, client_buf, 2, 0, cadd_aux, &cadd_len) < 0) {
-            if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                continue;
-            } 
-            else {
-                std::cerr << "Error: recvfrom: " << errno << std::endl;
-                break;
-            }
-        }
+		while (1) {
+			if (recvfrom(clientfd, client_buf, 2, 0, (sockaddr *) &caddraux, &cadd_len) < 0) {
+				if (errno == EAGAIN || errno == EWOULDBLOCK) {
+					continue;
+				} 
+				else {
+					std::cerr << "Error: recvfrom: " << errno << std::endl;
+					delete[] sliding_window;
+					return false;
+				}
+			}
+			if (std::memcmp(&caddr, &caddraux, cadd_len) == 0) {
+				break;
+			}
+			else {
+				std::cout << "Caaala a boca porra!\n";
+			}
+			// TODO: Else manda wait para o cliente
+		}
 
         if (client_buf[0] == MessageType::ACK) {
             win_init_idx = (win_init_idx + this->win_size) % (this->win_size*2);

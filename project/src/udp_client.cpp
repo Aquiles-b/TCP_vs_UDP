@@ -129,16 +129,17 @@ bool UDPClient::get_buffer_and_win_size(char *fname) {
     msg[0] = MessageType::TXDATA;
     strncpy(msg+1, fname, max_fname_size);
 
-	if (sendto(sock, msg, max_fname_size+1, 0, (sockaddr *) &saddr, sizeof(saddr)) < 0) {
-        std::cerr << "Error: sendto: " << errno << std::endl;
-    }
     socklen_t saddr_len = sizeof(saddr);
 	unsigned int num_try = 1;
     while (1) {
+		if (sendto(sock, msg, max_fname_size+1, 0, (sockaddr *) &saddr, sizeof(saddr)) < 0) {
+        	std::cerr << "Error: sendto: " << errno << std::endl;
+    	}
         if (recvfrom(sock, txdatabuffer, sizeof(txdatabuffer), 0,
                                             (sockaddr *) &saddr, &saddr_len) < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 num_try++;
+				sleep(1);
                 continue;
             } 
             else {

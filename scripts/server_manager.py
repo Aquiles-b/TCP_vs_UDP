@@ -52,7 +52,8 @@ class ServerHandler(BaseHTTPRequestHandler):
 			log_file = open(f"logs/server/{netdir}/{str(protocol).upper()}/{logname}", "wt")
 			active_server_process = subprocess.Popen(
 				["sh", "-c", f"./server 0.0.0.0 {str(port)} {str(protocol)} {str(buffer_size)} {str(protocol_arg)}"],
-				stdout=log_file
+				stdout=subprocess.PIPE,
+				stderr=subprocess.PIPE
 			)
 			print(f"Process pid: {active_server_process.pid}")
 			self._send_response(200, "Server started successfully.")
