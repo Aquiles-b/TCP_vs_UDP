@@ -254,10 +254,10 @@ logs
 			<p>Para a realização dos testes foi implementado um servidor HTTP simples que possibilita o cliente instanciar o servidor de testes remotamente, permitindo a automatização de todos os testes. A implementação desse servidor foi feita em liguagem Python e o código pode ser encontrado no diretório <tt>scripts</tt>.</p>
 			<pre>
 scripts/
-├── <a href="scritps/estrutura.sh" target="_blank">estrutura.sh</a>
-├── <a href="scritps/gen_files.py" target="_blank">gen_files.py</a>
-├── <a href="scritps/run_test.py" target="_blank">run_test.py</a>
-└── <a href="scritps/server_manager.py" target="_blank">server_manager.py</a>
+├── <a href="scripts/estrutura.sh.txt" target="_blank">estrutura.sh</a>
+├── <a href="scripts/gen_files.py" target="_blank">gen_files.py</a>
+├── <a href="scripts/run_test.py" target="_blank">run_test.py</a>
+└── <a href="scripts/server_manager.py" target="_blank">server_manager.py</a>
 			</pre>
 			<p>O arquivo <tt>estrutura.sh</tt> é um script para gerar a estrutura de diretórios necessária para a realização dos testes. O <tt>gen_files.py</tt> gera arquivos aleatórios de 1MB, 10MB, 100MB e 1GB para utilização nos testes. O script <tt>run_test.py</tt> é o cliente HTTP que faz a instanciação de múltiplos clientes em paralelo para realizar os testes dos protocolos TCP e UDP. Por fim, o <tt>server_manager.py</tt> é o servidor HTTP que gerencia o servidor de teste, instanciando novos servidores em portas diferentes quando requisitado.</p>
 			<p>Foram realizados testes simulando a execução de 1, 2, 4, e 8 clientes requirindo arquivos de 10MB para o servidor. Para o TCP, foram realizados testes variando o número de clientes, o tamanho do buffer de transmissão e o modo do servidor (iterativo ou paralelo). Para o UDP, o modo não variou porque ele possui somente o modo iterativo, entretanto o tamanho da janela do controle de fluxo foi variado. Foram utilizados arquivos de somente 10MB por causa da grande quantidade de testes que resultam em um tráfego de rede muito alto, fazendo os testes ficarem muito extensos.</p>
@@ -270,6 +270,7 @@ scripts/
 				<li><s>Intervalo de tempo</s> = [0] (O intervalo de tempo entre a instanciação de clientes foi retirado pois sua relevância não é tão alta e para diminuir o grande número de testes)</li>
 				<li>Tamanho de Arquivo = 10MB</li>
 			</ul>
+			<p>Os testes foram realizados utilizando dois ambientes, rede local e rede externa. Para a rede externa, foi utilizado o Radmin, um software de acesso remoto que permite criar uma rede virtual privada (VPN), simulando condições de tráfego da internet, como latência e perda de pacotes, para testes mais realistas.</p>
 		</section>
 		<section>
 			<h2>Resultados</h2>
