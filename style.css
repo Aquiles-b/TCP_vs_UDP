@@ -89,6 +89,11 @@ section {
 	border-radius: 5px;
 }
 
+.tab-log {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
 .tab-log thead {
 	background-color: var(--color3);
 	color: white;
