@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall 
+CFLAGS = -Wall -g
 
 SOURCES = $(shell find project/src -name '*.cpp')
 TESTS = $(shell find project/tests -name '*.cpp')

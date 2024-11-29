@@ -43,7 +43,7 @@ def save_results_to_csv(results, output_file):
 		output_file (str): Caminho do arquivo CSV a ser criado.
 	"""
 	# Estrutura de cabeçalho
-	header = ["Tam arquivo", "Perda de pacotes", "Tempo de download", "Sha256sum"]
+	header = ["Num tentativas", "Perda de pacotes", "Tempo de download", "Sha256sum"]
 
 	# Lista para armazenar as linhas
 	rows = []
@@ -53,13 +53,13 @@ def save_results_to_csv(results, output_file):
 		if client_id == "total_time":
 			continue  # Ignorar o campo "tempo_total" temporariamente
 
-		file_size = client_data.get("filesize", "N/A")
+		numtentativas = client_data.get("numtentativas", "1")
 		packet_loss = client_data.get("packet_loss", 0)
 		download_time = client_data.get("time", 0)  # Tempo em float
 		checksum = 1 if client_data.get("csum", False) else 0  # Converter checksum para inteiro
 
 		# Adiciona a linha à lista
-		rows.append([file_size, packet_loss, download_time, checksum])
+		rows.append([numtentativas, packet_loss, download_time, checksum])
 
 	# Adiciona a linha do tempo total
 	total_time = results.get("total_time", 0)
@@ -106,7 +106,6 @@ def run_tcp_client(clientid: int, filesize: str, result: dict):
 		return
 	end_time = time.time()
 	result["time"] = end_time - start_time
-	result["filesize"] = filesize
 	csum = calculate_sha256(f"downloads/{clientid}/{filesize}.bin")
 	result["csum"] = csum == checksums[filesize] # True se os checksums baterem e falso caso contrário
 
@@ -119,7 +118,6 @@ def run_udp_client(clientid: int, filesize: str, result: dict):
 		return
 	end_time = time.time()
 	result["time"] = end_time - start_time
-	result["filesize"] = filesize
 	csum = calculate_sha256(f"downloads/{clientid}/{filesize}.bin")
 	result["csum"] = csum == checksums[filesize] # True se os checksums baterem e falso caso contrário
 
@@ -169,11 +167,11 @@ if __name__ == "__main__":
 	http_port = sys.argv[2]
 	local_net = bool(sys.argv[3])
 	buffersizes = [1024, 4096, 16384, 16384*3]
-	# clientnum = [1, 2, 4, 8]
-	clientnum = [1]
+	clientnum = [1, 2, 4, 8]
+	#clientnum = [1]
 	udpwindow = [4, 16, 64, 256]
 	timeintervals = [0]
-	filesizes = ["1MB", "10MB", "100MB"]
+	filesizes = ["10MB"]
 	for fsize in filesizes:
 		checksums[fsize] = calculate_sha256(f"files/{fsize}.bin")
 
@@ -197,18 +195,17 @@ if __name__ == "__main__":
 				for tinter in timeintervals:
 					for fsize in filesizes:
 						run_test_tcp(cnum, tinter, fsize, servermode, local_net, bsize)
+	print(f"Realizando testes UDP")
 	for winsize in udpwindow:
 		for bsize in buffersizes:
 			file_server_port += 1 # Utiliza portas diferentes para o servidor (evita erro de bind)
 			print(f"Iniciando servidor: {http_ip}:{file_server_port} UDP com buffer de {bsize}B com janela de {winsize} segmentos")
 			init_server(file_server_port, "udp", bsize, winsize, local_net)
-			break
 			print("Servidor iniciado")
 			for cnum in clientnum:
 				for tinter in timeintervals:
 					for fsize in filesizes:
 						run_test_udp(cnum, tinter, fsize, winsize, local_net, bsize)
-		break
 	end_time = time.time()
 
 

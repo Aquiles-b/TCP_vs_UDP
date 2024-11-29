@@ -9,7 +9,7 @@ UDPClient::UDPClient(char *addrstr, char *port)
     struct timeval timeout;
     // Configurando o timeout para recvfrom()
     timeout.tv_sec = 0;
-    timeout.tv_usec = 100000;  // 100.000 microssegundos = 100 milissegundos;
+    timeout.tv_usec = 500000;  // 100.000 microssegundos = 100 milissegundos;
     if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
         perror("Error: Unable to set timeout");
     }
@@ -65,6 +65,7 @@ int UDPClient::recv_window(uint8_t **sliding_win) {
     socklen_t saddr_len = sizeof(saddr);
     uint8_t *buf_aux, mtype;
     int num_bytes_read;
+	unsigned int tries = 32;
 
     int current_idx;
     int message_ordered_idx;
@@ -77,12 +78,16 @@ int UDPClient::recv_window(uint8_t **sliding_win) {
 
         if ((num_bytes_read = recvfrom(sock, buf_aux, bsize, 0, saddr_aux, &saddr_len)) < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                break;
+				if (--tries == 0) {
+					return -1;
+				}
+                continue;
             } 
             else {
                 return -1;
             }
         }
+		tries = 32;
         mtype = getMessageType(buf_aux);
         if (mtype != MessageType::DATA && mtype != MessageType::ENDTX) {
             return -1;
@@ -101,7 +106,7 @@ int UDPClient::recv_window(uint8_t **sliding_win) {
     }
 
     int j = 0;
-    for (j = 0; j <= messages_recv; j++) {
+    for (j = 0; j < messages_recv; j++) {
         if (sliding_win[j][1] != current_seq) {
             break;
         }
@@ -128,30 +133,39 @@ bool UDPClient::get_buffer_and_win_size(char *fname) {
         std::cerr << "Error: sendto: " << errno << std::endl;
     }
     socklen_t saddr_len = sizeof(saddr);
-	if (recvfrom(sock, txdatabuffer, sizeof(txdatabuffer), 0,
-                                        (sockaddr *) &saddr, &saddr_len) < 0) {
+	unsigned int num_try = 1;
+    while (1) {
+        if (recvfrom(sock, txdatabuffer, sizeof(txdatabuffer), 0,
+                                            (sockaddr *) &saddr, &saddr_len) < 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                num_try++;
+                continue;
+            } 
+            else {
+                return false;
+            }
+        }
+		break;
+    }
+    std::cout << num_try << std::endl;
+	mtype = getMessageType(txdatabuffer);
+	switch (mtype) {
+	case TXDATA:
+		fsize = ((size_t *) (txdatabuffer+1))[0];
+		this->bsize = ((size_t *) (txdatabuffer+1))[1];
+		this->win_size = static_cast<int>(((size_t *) (txdatabuffer+1))[2]);
+		(void) fsize; // Remove warning de variavel nao utilizada
+		send_ACK();
+		return true;
+		break;
+	case ERROR:
+		std::cerr << "Server error ocurred.\n";
 		return false;
-	}
-	else {
-		mtype = getMessageType(txdatabuffer);
-		switch (mtype) {
-		case TXDATA:
-			fsize = ((size_t *) (txdatabuffer+1))[0];
-			this->bsize = ((size_t *) (txdatabuffer+1))[1];
-			this->win_size = static_cast<int>(((size_t *) (txdatabuffer+1))[2]);
-			(void) fsize; // Remove warning de variavel nao utilizada
-            send_ACK();
-            return true;
-			break;
-		case ERROR:
-			std::cerr << "Server error ocurred.\n";
-			return false;
-			break;
-		default:
-			std::cerr << "Unexpected message received. Terminating connection.\n";
-			return false;
-			break;
-		}
+		break;
+	default:
+		std::cerr << "Unexpected message received. Terminating connection.\n";
+		return false;
+		break;
 	}
 }
 
@@ -173,14 +187,14 @@ void UDPClient::setWinSize(int win_size) {
 }
 
 void UDPClient::send_ACK() const {
-    uint8_t buf[2];
+    uint8_t buf[1];
     buf[0] = MessageType::ACK;
-    sendto(sock, buf, 2, 0, (sockaddr *) &saddr, sizeof(saddr));
+    sendto(sock, buf, sizeof(buf), 0, (sockaddr *) &saddr, sizeof(saddr));
 }
 
 void UDPClient::send_NACK() const {
     uint8_t buf[2];
     buf[0] = MessageType::NACK;
     buf[1] = this->current_seq;
-    sendto(sock, buf, 2, 0, (sockaddr *) &saddr, sizeof(saddr));
+    sendto(sock, buf, sizeof(buf), 0, (sockaddr *) &saddr, sizeof(saddr));
 }

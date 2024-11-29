@@ -8,7 +8,6 @@ namespace tcp_vs_udp {
 	enum MessageType {
 		ERROR,
 		DATA,
-		DOWNLOAD,
 		ACK,
 		NACK,
 		ENDTX,

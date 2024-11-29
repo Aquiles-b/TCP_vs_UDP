@@ -98,6 +98,7 @@ bool UDPServer::send_window(const int&clientfd, uint8_t *sliding_window,
     for (int i = 0; i < this->win_size; i++) {
         current_msg_idx = (win_init_idx+i) % num_buffers;
         buffer_aux = sliding_window + bsize*current_msg_idx;
+		
         if (buffer_aux[0] == MessageType::DATA) {
             if (sendto(clientfd, buffer_aux, bsize, 0, caddr_aux, caddr_len) < 0) {
                 return false;
@@ -128,6 +129,7 @@ int UDPServer::fill_sliding_window(uint8_t *sliding_window, FILE *file, const in
             current_seq++;
         }
         else {
+			
             i--;
             cur_idx = (cur_win_idx + i) % (this->win_size*2);
             (sliding_window + cur_idx*bsize)[0] = MessageType::ENDTX;
@@ -139,7 +141,8 @@ int UDPServer::fill_sliding_window(uint8_t *sliding_window, FILE *file, const in
     }
 
     if (feof(file)) {
-        cur_idx = (cur_win_idx + count) % (this->win_size*2);
+		
+        cur_idx = (cur_win_idx + count - 1) % (this->win_size*2);
         (sliding_window + cur_idx*bsize)[0] = MessageType::ENDTX;
         last_message_size = last_bytes_read;
     }
