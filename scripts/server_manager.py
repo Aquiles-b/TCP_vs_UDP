@@ -1,9 +1,11 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import subprocess
 import json
+import time
 
 # Variável global para armazenar o processo ativo do servidor C++
 active_server_process = None
+log_file = None
 
 class ServerHandler(BaseHTTPRequestHandler):
 	def _send_response(self, code, message):
@@ -14,7 +16,7 @@ class ServerHandler(BaseHTTPRequestHandler):
 		self.wfile.write(json.dumps({"message": message}).encode())
 
 	def do_POST(self):
-		global active_server_process
+		global active_server_process, log_file
 		
 		# Lê e processa o corpo da requisição
 		content_length = int(self.headers["Content-Length"])
@@ -31,15 +33,26 @@ class ServerHandler(BaseHTTPRequestHandler):
 			return
 
 		# Derruba o servidor ativo, se existir
-		if active_server_process:
+		time.sleep(1)
+		if active_server_process != None:
 			active_server_process.terminate()
 			active_server_process.wait()
 			active_server_process = None
+			log_file.close()
+			log_file = None
 
 		# Inicia o servidor C++ com os argumentos fornecidos
 		try:
+			netdir = "rede_local" if bool(localnet) else "rede_externa"
+			logname: str
+			if (protocol == "tcp"):
+				logname = f"{str(protocol_arg)}_{buffer_size}.txt"
+			else:
+				logname = f"iter_{buffer_size}_{protocol_arg}.txt"
+			log_file = open(f"logs/server/{netdir}/{str(protocol).upper()}/{logname}", "wt")
 			active_server_process = subprocess.Popen(
-				["sh", "-c", f"./server 127.0.0.1 {str(port)} {str(protocol)} {str(buffer_size)} {str(protocol_arg)}", f"> logs/server/{protocol_arg}_{buffer_size}.txt"],
+				["sh", "-c", f"./server 0.0.0.0 {str(port)} {str(protocol)} {str(buffer_size)} {str(protocol_arg)}"],
+				stdout=log_file
 			)
 			print(f"Process pid: {active_server_process.pid}")
 			self._send_response(200, "Server started successfully.")

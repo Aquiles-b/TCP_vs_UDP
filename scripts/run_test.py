@@ -4,20 +4,82 @@ import sys
 import subprocess
 import threading
 import time
+import hashlib
+import csv
 
 http_ip = None
 http_port = None
 file_server_port = 6666
+checksums = dict()
+
+def calculate_sha256(file_path):
+	"""
+	Calcula o hash SHA-256 de um arquivo.
+
+	Args:
+		file_path (str): Caminho do arquivo para calcular o hash.
+
+	Returns:
+		str: Hash SHA-256 em formato hexadecimal.
+	"""
+	sha256_hash = hashlib.sha256()
+	try:
+		with open(file_path, "rb") as file:
+			# Lê o arquivo em blocos para evitar alto consumo de memória com arquivos grandes.
+			for chunk in iter(lambda: file.read(4096), b""):
+				sha256_hash.update(chunk)
+		return sha256_hash.hexdigest()
+	except FileNotFoundError:
+		return "Arquivo não encontrado."
+	except Exception as e:
+		return f"Erro ao calcular o hash: {e}"
+	
+def save_results_to_csv(results, output_file):
+	"""
+	Salva os resultados do teste em um arquivo CSV.
+
+	Args:
+		results (dict): Resultados no formato especificado.
+		output_file (str): Caminho do arquivo CSV a ser criado.
+	"""
+	# Estrutura de cabeçalho
+	header = ["Tam arquivo", "Perda de pacotes", "Tempo de download", "Sha256sum"]
+
+	# Lista para armazenar as linhas
+	rows = []
+
+	# Processa cada cliente e cria as linhas
+	for client_id, client_data in results.items():
+		if client_id == "total_time":
+			continue  # Ignorar o campo "tempo_total" temporariamente
+
+		file_size = client_data.get("filesize", "N/A")
+		packet_loss = client_data.get("packet_loss", 0)
+		download_time = client_data.get("time", 0)  # Tempo em float
+		checksum = 1 if client_data.get("csum", False) else 0  # Converter checksum para inteiro
+
+		# Adiciona a linha à lista
+		rows.append([file_size, packet_loss, download_time, checksum])
+
+	# Adiciona a linha do tempo total
+	total_time = results.get("total_time", 0)
+	rows.append(["-", "-", total_time, "-"])
+
+	# Salva o arquivo CSV
+	with open(output_file, mode="w", newline="") as file:
+		writer = csv.writer(file)
+		writer.writerow(header)  # Escreve o cabeçalho
+		writer.writerows(rows)  # Escreve as linhas
 
 def init_server(server_port: int, protocol: str, buffersize: int, protocol_arg: str, localnet: bool):
 	global http_ip, http_port
 	payload = {
-        "buffer_size": buffersize,
-        "protocol": protocol,
-        "port": server_port,
-        "protocol_arg": protocol_arg,
+		"buffer_size": buffersize,
+		"protocol": protocol,
+		"port": server_port,
+		"protocol_arg": protocol_arg,
 		"localnet": localnet
-    }
+	}
 	try:
 		# Faz a requisição POST para o servidor HTTP
 		response = requests.post(f"http://{http_ip}:{http_port}/", json=payload)
@@ -36,7 +98,7 @@ def init_server(server_port: int, protocol: str, buffersize: int, protocol_arg: 
 		return f"Failed to connect to HTTP server: {e}"
 
 def run_tcp_client(clientid: int, filesize: str, result: dict):
-	global http_ip, file_server_port
+	global http_ip, file_server_port, checksums
 	start_time = time.time()
 	process = subprocess.Popen(["sh", "-c", f"./client {http_ip} {file_server_port} tcp files/{filesize}.bin downloads/{clientid}/{filesize}.bin"])
 	if (process.wait() != 0):
@@ -44,8 +106,12 @@ def run_tcp_client(clientid: int, filesize: str, result: dict):
 		return
 	end_time = time.time()
 	result["time"] = end_time - start_time
+	result["filesize"] = filesize
+	csum = calculate_sha256(f"downloads/{clientid}/{filesize}.bin")
+	result["csum"] = csum == checksums[filesize] # True se os checksums baterem e falso caso contrário
 
-def run_test_tcp_iter(clientnum: int, interval: float, filesize: str):
+
+def run_test_tcp(clientnum: int, interval: float, filesize: str, servermode: str, localnet: bool, buffersize: int):
 	threads: list[threading.Thread] = []
 	results = dict()
 	start_time = time.time()
@@ -59,9 +125,20 @@ def run_test_tcp_iter(clientnum: int, interval: float, filesize: str):
 	for t in threads:
 		t.join()
 	end_time = time.time()
-	
-	print(results)
-	print(total_time := end_time - start_time)
+	total_time = end_time - start_time
+	results["total_time"] = total_time
+	netdir ='rede_local' if localnet else 'rede_externa'
+	save_results_to_csv(results, f"logs/client/{netdir}/TCP/{servermode}_{clientnum}_{buffersize}.csv")
+'''
+{
+	clientid: {
+		"filesize": str,
+		"tempo": float,
+		"csum": bool
+	}
+	"tempo_total": float
+}
+'''
 
 if __name__ == "__main__":
 	if len(sys.argv) != 4:
@@ -73,19 +150,30 @@ if __name__ == "__main__":
 	buffersizes = [1024, 4096, 16384, 16384*3]
 	clientnum = [1, 2, 4, 8]
 	udpwindow = [1, 4, 16, 64, 256]
-	timeintervals = [0.25]
+	timeintervals = [0]
 	filesizes = ["1MB", "10MB", "100MB"]
+	for fsize in filesizes:
+		checksums[fsize] = calculate_sha256(f"files/{fsize}.bin")
+
 	for i in range(max(clientnum)):
 		try:
 			os.mkdir(f"downloads/{i}")
 		except FileExistsError as e:
 			print(f"Directory downloads/{i} already exists.")
 	print(f"Trafego estimado: {len(buffersizes)*sum(clientnum)*(2+len(udpwindow))*len(timeintervals)/10}GB")
-	for bsize in buffersizes:
-		init_server(file_server_port, "tcp", bsize, "iter", local_net)
-		for cnum in clientnum:
-			for tinter in timeintervals:
-				for fsize in filesizes:
-					run_test_tcp_iter(cnum, tinter, fsize)
+	print("Iniciando testes.")
+	start_time = time.time()
+	print(f"Realizando testes TCP")
+	for servermode in ["iter", "par"]:
+		for bsize in buffersizes:
+			file_server_port += 1 # Utiliza portas diferentes para o servidor (evita erro de bind)
+			print(f"Iniciando servidor: {http_ip}:{file_server_port} TCP com buffer de {bsize}B no modo {servermode}")
+			init_server(file_server_port, "tcp", bsize, servermode, local_net)
+			print("Servidor iniciado")
+			for cnum in clientnum:
+				for tinter in timeintervals:
+					for fsize in filesizes:
+						run_test_tcp(cnum, tinter, fsize, servermode, local_net, bsize)
+	end_time = time.time()
 
 
