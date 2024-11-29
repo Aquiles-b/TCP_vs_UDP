@@ -262,6 +262,14 @@ scripts/
 			<p>O arquivo <tt>estrutura.sh</tt> é um script para gerar a estrutura de diretórios necessária para a realização dos testes. O <tt>gen_files.py</tt> gera arquivos aleatórios de 1MB, 10MB, 100MB e 1GB para utilização nos testes. O script <tt>run_test.py</tt> é o cliente HTTP que faz a instanciação de múltiplos clientes em paralelo para realizar os testes dos protocolos TCP e UDP. Por fim, o <tt>server_manager.py</tt> é o servidor HTTP que gerencia o servidor de teste, instanciando novos servidores em portas diferentes quando requisitado.</p>
 			<p>Foram realizados testes simulando a execução de 1, 2, 4, e 8 clientes requirindo arquivos de 10MB para o servidor. Para o TCP, foram realizados testes variando o número de clientes, o tamanho do buffer de transmissão e o modo do servidor (iterativo ou paralelo). Para o UDP, o modo não variou porque ele possui somente o modo iterativo, entretanto o tamanho da janela do controle de fluxo foi variado. Foram utilizados arquivos de somente 10MB por causa da grande quantidade de testes que resultam em um tráfego de rede muito alto, fazendo os testes ficarem muito extensos.</p>
 			<p>Após a tranferência de arquivos, o script calcula o hash SHA-256 do arquivo baixado e do arquivo original (o cliente precisa ter uma cópia do arquivo original antes de rodar os testes) e compara, colocando 1 no seu log csv caso o hash seja igual ao original e 0 caso contrário, permitindo o cálculo da taxa de sucesso de download e a necessidade de verificação de erros.</p>
+			<p>Aqui estão os parâmetros de teste utilizados, tendo um teste para cada combinação de parâmetros:</p>
+			<ul>
+				<li>Tamanho de buffer de transmissão = [1024, 4096, 16384, 49152] bytes</li>
+				<li>Número de clientes = [1, 2, 4, 8]</li>
+				<li>Tamanho de janela UDP = [4, 16, 64, 256]</li>
+				<li><s>Intervalo de tempo</s> = [0] (O intervalo de tempo entre a instanciação de clientes foi retirado pois sua relevância não é tão alta e para diminuir o grande número de testes)</li>
+				<li>Tamanho de Arquivo = 10MB</li>
+			</ul>
 		</section>
 		<section>
 			<h2>Resultados</h2>
