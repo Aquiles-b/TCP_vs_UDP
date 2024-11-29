@@ -6,7 +6,7 @@ using namespace tcp_vs_udp;
 
 int main(int argc, char **argv) {
 	if (argc < 5) {
-		std::cerr << "Correct usage: ./client <server_ipv4_addr> <server_port> <protocol> <fname> <fout> \n";
+		std::cerr << "Correct usage: ./client <server_ipv4_addr> <server_port> <protocol> <fname> <fout>\n";
 		exit(1);
 	}
 	std::unique_ptr<BasicClient> c;

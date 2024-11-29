@@ -5,6 +5,11 @@
 using namespace tcp_vs_udp;
 
 int main(int argc, char **argv) {
+	std::cout << ">";
+	for (int i = 0; i < argc; i++) {
+		std::cout << " " << argv[i];
+	}
+	std::cout << "\n";
 	if (argc != 6) {
 		std::cerr << "Correct usage: ./server <ipv4_addr> <port> <protocol> <buffer_size> <win_size_udp | mode_tcp(iter|par)>\n";
 		exit(1);
