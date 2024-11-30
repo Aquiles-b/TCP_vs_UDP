@@ -192,10 +192,10 @@ if __name__ == "__main__":
         exit(1)
     http_ip = sys.argv[1]
     http_port = sys.argv[2]
-    local_net = bool(sys.argv[3])
+    local_net = sys.argv[3].lower() == "true"
     buffersizes = [1024, 4096, 16384, 16384*3]
     clientnum = [1, 2, 4, 8]
-    udpwindow = [4, 16, 64, 256]
+    udpwindow = [4, 16, 64]
     timeintervals = [0]
     filesizes = ["10MB"]
     for fsize in filesizes:
