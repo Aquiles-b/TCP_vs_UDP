@@ -13,6 +13,7 @@
 	--color3: #2469A6;
 	--color4: #3DADD9;
 	--color5: #6CC5D9;
+	--hover-color: #1EC98E;
 }
 
 * {
@@ -88,6 +89,11 @@ section {
 	border-radius: 5px;
 }
 
+.tab-log {
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
 .tab-log thead {
 	background-color: var(--color3);
 	color: white;
@@ -102,9 +108,12 @@ section {
 .tab-log th:first-child, .tab-log td:first-child {
 	text-align: right;
 }
-
 .tab-log tbody tr:nth-child(odd) {
 	background-color: var(--color4);
+}
+
+.tab-log tbody tr {
+	transition: background-color 0.3s ease;
 }
 
 .tab-log tbody tr:nth-child(even) {
@@ -126,4 +135,9 @@ section {
     border: 1px solid var(--color3);
     padding: 8px;
     text-align: left;
+}
+
+.tab-log tbody tr:hover {
+	background-color: var(--hover-color);
+	transition: background-color 0.3s ease;
 }
