@@ -57,8 +57,8 @@ class ServerHandler(BaseHTTPRequestHandler):
             log_file = open(f"logs/server/{netdir}/{str(protocol).upper()}/{logname}", "wt")
             active_server_process = subprocess.Popen(
                     ["sh", "-c", f"./server 0.0.0.0 {str(port)} {str(protocol)} {str(buffer_size)} {str(protocol_arg)}"],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE
+                    stdout=log_file,
+                    stderr=log_file
                     )
             print(f"Process pid: {active_server_process.pid}")
             self._send_response(200, "Server started successfully.")
@@ -77,7 +77,7 @@ class ServerHandler(BaseHTTPRequestHandler):
         else:
             self._send_response(404, "No active server to stop.")
 
-def run_http_server(host="localhost", port=8080):
+def run_http_server(host="0.0.0.0", port=8080):
     """Inicia o servidor HTTP."""
     server = HTTPServer((host, port), ServerHandler)
     print(f"HTTP server running on {host}:{port}")

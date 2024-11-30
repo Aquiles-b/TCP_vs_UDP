@@ -210,7 +210,7 @@ if __name__ == "__main__":
     for servermode in ["iter", "par"]:
         for bsize in buffersizes:
             file_server_port += 1 # Utiliza portas diferentes para o servidor (evita erro de bind)
-            print(f"Iniciando servidor: {http_ip}:{file_server_port} TCP com buffer de {bsize}B no modo {servermode}")
+            print(f"Requisitando servidor: {http_ip}:{file_server_port} TCP com buffer de {bsize}B no modo {servermode}")
             init_server(file_server_port, "tcp", bsize, servermode, local_net)
             print("Servidor iniciado")
             for cnum in clientnum:
@@ -221,7 +221,7 @@ if __name__ == "__main__":
     for winsize in udpwindow:
         for bsize in buffersizes:
             file_server_port += 1 # Utiliza portas diferentes para o servidor (evita erro de bind)
-            print(f"Iniciando servidor: {http_ip}:{file_server_port} UDP com buffer de {bsize}B com janela de {winsize} segmentos")
+            print(f"Requisitando servidor: {http_ip}:{file_server_port} UDP com buffer de {bsize}B com janela de {winsize} segmentos")
             init_server(file_server_port, "udp", bsize, str(winsize), local_net)
             print("Servidor iniciado")
             for cnum in clientnum:
