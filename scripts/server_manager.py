@@ -41,7 +41,7 @@ class ServerHandler(BaseHTTPRequestHandler):
             log_file.close()
             log_file = None
 
-        print("Starting server with:")
+        print("\nStarting server with:")
         print(f"Buffer size: {buffer_size}")
         print(f"Protocol: {protocol}")
         print(f"Port: {port}")

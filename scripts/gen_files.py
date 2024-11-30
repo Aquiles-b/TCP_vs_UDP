@@ -6,7 +6,6 @@ def create_files():
         "1MB.bin": 1 * 1_000_000,
         "10MB.bin": 10 * 1_000_000,
         "100MB.bin": 100 * 1_000_000,
-        "1GB.bin": 1000 * 1_000_000,
     }
 
     # Diretório para salvar os arquivos

@@ -8,6 +8,7 @@ import hashlib
 import csv
 from time import sleep
 
+MAX_TRIES = 10
 http_ip = None
 http_port = None
 file_server_port = 6666
@@ -102,33 +103,50 @@ def run_tcp_client(clientid: int, filesize: str, result: dict):
     global http_ip, file_server_port, checksums
     start_time = time.time()
     command = f"./client {http_ip} {file_server_port} tcp files/{filesize}.bin downloads/{clientid}/{filesize}.bin"
+    ntries = 0
     process = subprocess.Popen(["sh", "-c", command], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     while (process.wait() != 0):
+        ntries += 1
+        if ntries >= MAX_TRIES:
+            break
         process = subprocess.Popen(["sh", "-c", command], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         sleep(0.2)
 
     end_time = time.time()
     result["time"] = end_time - start_time
-    csum = calculate_sha256(f"downloads/{clientid}/{filesize}.bin")
-    result["csum"] = csum == checksums[filesize] # True se os checksums baterem e falso caso contrário
+
+    if ntries >= MAX_TRIES:
+        print(f"Client {clientid} failed to download {filesize}.bin")
+        result["csum"] = False
+    else:
+        csum = calculate_sha256(f"downloads/{clientid}/{filesize}.bin")
+        result["csum"] = csum == checksums[filesize] # True se os checksums baterem e falso caso contrário
 
 def run_udp_client(clientid: int, filesize: str, result: dict):
     global http_ip, file_server_port, checksums
     start_time = time.time()
     command = f"./client {http_ip} {file_server_port} udp files/{filesize}.bin downloads/{clientid}/{filesize}.bin"
+    ntries = 0
     process = subprocess.Popen(["sh", "-c", command], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     while (process.wait() != 0):
+        ntries += 1
+        if ntries >= MAX_TRIES:
+            break
         process = subprocess.Popen(["sh", "-c", command], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         sleep(0.2)
 
-    stdout_client = process.stdout.read().split("\n")
-    result["ntries"] = int(stdout_client[0].split(":")[1])
-    result["nlosspackets"] = int(stdout_client[1].split(":")[1])
-
     end_time = time.time()
     result["time"] = end_time - start_time
-    csum = calculate_sha256(f"downloads/{clientid}/{filesize}.bin")
-    result["csum"] = csum == checksums[filesize] # True se os checksums baterem e falso caso contrário
+
+    if ntries < MAX_TRIES:
+        stdout_client = process.stdout.read().split("\n")
+        result["ntries"] = int(stdout_client[0].split(":")[1])
+        result["nlosspackets"] = int(stdout_client[1].split(":")[1])
+        csum = calculate_sha256(f"downloads/{clientid}/{filesize}.bin")
+        result["csum"] = csum == checksums[filesize] # True se os checksums baterem e falso caso contrário
+    else:
+        print(f"Client {clientid} failed to download {filesize}.bin")
+        result["csum"] = False
 
 def run_test_tcp(clientnum: int, interval: float, filesize: str, servermode: str, localnet: bool, buffersize: int):
     threads: list[threading.Thread] = []
@@ -190,7 +208,6 @@ if __name__ == "__main__":
     start_time = time.time()
     print(f"Realizando testes TCP")
     for servermode in ["iter", "par"]:
-        break
         for bsize in buffersizes:
             file_server_port += 1 # Utiliza portas diferentes para o servidor (evita erro de bind)
             print(f"Iniciando servidor: {http_ip}:{file_server_port} TCP com buffer de {bsize}B no modo {servermode}")

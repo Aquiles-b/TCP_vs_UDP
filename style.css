@@ -113,7 +113,6 @@ section {
 }
 
 .tab-log tbody tr {
-	transition: background-color 0.3s ease;
 }
 
 .tab-log tbody tr:nth-child(even) {
@@ -139,5 +138,4 @@ section {
 
 .tab-log tbody tr:hover {
 	background-color: var(--hover-color);
-	transition: background-color 0.3s ease;
 }
