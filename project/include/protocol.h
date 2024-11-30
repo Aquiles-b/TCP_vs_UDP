@@ -12,6 +12,7 @@ namespace tcp_vs_udp {
 		NACK,
 		ENDTX,
 		TXDATA,
+        SHUTUP,
 	};
 }
 

@@ -30,6 +30,7 @@ int UDPClient::download(char *fname, char *fout) {
     uint8_t *sliding_win[this->win_size];
     int num_valid_messages;
     bool is_finished = false;
+    unsigned int num_lost_messages = 0;
 
     while (!is_finished) {
         if ((num_valid_messages = recv_window(sliding_win)) == -1) {
@@ -53,8 +54,10 @@ int UDPClient::download(char *fname, char *fout) {
         }
         else {
             send_NACK();
+            num_lost_messages += this->win_size - num_valid_messages;
         }
     }
+    std::cout << "Lost messages: " << num_lost_messages << std::endl;
 
     delete[] this->sliding_win_buf;
 	return 1;
@@ -65,7 +68,7 @@ int UDPClient::recv_window(uint8_t **sliding_win) {
     socklen_t saddr_len = sizeof(saddr);
     uint8_t *buf_aux, mtype;
     int num_bytes_read;
-	unsigned int tries = 32;
+	unsigned int tries = 256;
 
     int current_idx;
     int message_ordered_idx;
@@ -79,17 +82,17 @@ int UDPClient::recv_window(uint8_t **sliding_win) {
         if ((num_bytes_read = recvfrom(sock, buf_aux, bsize, 0, saddr_aux, &saddr_len)) < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
 				if (--tries == 0) {
+                    std::cout << "Timeout\n";
 					return -1;
 				}
                 continue;
             } 
-            else {
-                return -1;
-            }
+            return -1;
         }
-		tries = 32;
+		tries = 256;
         mtype = getMessageType(buf_aux);
         if (mtype != MessageType::DATA && mtype != MessageType::ENDTX) {
+            std::cout << "Unexpected message type received: " << (int) mtype << std::endl;
             return -1;
         }
         message_ordered_idx = (uint8_t)(buf_aux[1] - current_seq);
@@ -130,25 +133,27 @@ bool UDPClient::get_buffer_and_win_size(char *fname) {
     strncpy(msg+1, fname, max_fname_size);
 
     socklen_t saddr_len = sizeof(saddr);
-	unsigned int num_try = 1;
+	unsigned int num_try = 0;
     while (1) {
+        num_try++;
 		if (sendto(sock, msg, max_fname_size+1, 0, (sockaddr *) &saddr, sizeof(saddr)) < 0) {
         	std::cerr << "Error: sendto: " << errno << std::endl;
+            return false;
     	}
-        if (recvfrom(sock, txdatabuffer, sizeof(txdatabuffer), 0,
-                                            (sockaddr *) &saddr, &saddr_len) < 0) {
+        if (recvfrom(sock, txdatabuffer, sizeof(txdatabuffer), 0, (sockaddr *) &saddr, &saddr_len) < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                num_try++;
-				sleep(1);
+                sleep(1);
                 continue;
             } 
-            else {
-                return false;
-            }
+            return false;
+        }
+        if (getMessageType(txdatabuffer) == MessageType::SHUTUP) {
+            sleep(3);
+            continue;
         }
 		break;
     }
-    std::cout << num_try << std::endl;
+    std::cout << "Number of tries: " << num_try << std::endl;
 	mtype = getMessageType(txdatabuffer);
 	switch (mtype) {
 	case TXDATA:

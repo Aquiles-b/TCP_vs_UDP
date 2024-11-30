@@ -11,7 +11,7 @@ UDPServer::UDPServer(const std::string& ip_address, const int& port_number,
     struct timeval timeout;
     // Configurando o timeout para recvfrom()
     timeout.tv_sec = 0;
-    timeout.tv_usec = 100000;  // 100.000 microssegundos = 100 milissegundos;
+    timeout.tv_usec = 500000;  // 100.000 microssegundos = 100 milissegundos;
     if (setsockopt(this->listen_socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
         std::cerr << "Error: setsockopt timeout: " << errno << std::endl;
         exit(1);
@@ -34,11 +34,9 @@ bool UDPServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
         return false;
     }
 
-	sockaddr_in caddraux;
-    socklen_t cadd_len = sizeof(caddr);
     size_t &bsize = this->buffersize;
-
     int win_init_idx = 0, num_new_messages=0;
+    unsigned int tries = 128;
 
     num_new_messages = fill_sliding_window(sliding_window, file, win_init_idx,
             num_new_messages, current_seq, last_message_size);
@@ -57,24 +55,24 @@ bool UDPServer::sendFile(int clientfd, sockaddr_in &caddr, FILE *file) {
 
         // Recebe resposta do client
 		while (1) {
-			if (recvfrom(clientfd, client_buf, 2, 0, (sockaddr *) &caddraux, &cadd_len) < 0) {
-				if (errno == EAGAIN || errno == EWOULDBLOCK) {
-					continue;
-				} 
-				else {
-					std::cerr << "Error: recvfrom: " << errno << std::endl;
-					delete[] sliding_window;
-					return false;
-				}
-			}
-			if (std::memcmp(&caddr, &caddraux, cadd_len) == 0) {
-				break;
-			}
-			else {
-				std::cout << "Caaala a boca porra!\n";
-			}
-			// TODO: Else manda wait para o cliente
-		}
+            int ret = recv_from_client(clientfd, caddr, client_buf, 2);
+            if (ret == -2) {
+                std::cerr << "Error: recv_from_client: " << errno << std::endl;
+                break;
+            }
+            if (ret == -1) {
+                if (--tries == 0) {
+                    std::cout << "Client timeout." << std::endl;
+                    delete[] sliding_window;
+                    return false;
+                }
+                continue;
+            }
+            if (ret == 1) {
+                tries = 128;
+                break;
+            }
+        }
 
         if (client_buf[0] == MessageType::ACK) {
             win_init_idx = (win_init_idx + this->win_size) % (this->win_size*2);
@@ -161,31 +159,43 @@ int UDPServer::fill_sliding_window(uint8_t *sliding_window, FILE *file, const in
 }
 
 bool UDPServer::send_file_and_buffer_info(int clientfd, sockaddr_in &caddr, FILE *file,
-        const size_t &bsize) {
+                                                                    const size_t &bsize) {
     uint8_t buffer[1+3*sizeof(size_t)], client_buffer[2];
     buffer[0] = MessageType::TXDATA;
     fseek(file, 0, SEEK_END); 
     size_t fsize = ftell(file); // Pega o tamanho
+    fseek(file, 0, SEEK_SET);
     ((size_t*) (buffer+1))[0] = fsize; // Coloca tamanho na mensagem
     ((size_t*) (buffer+1))[1] = bsize; // Coloca tamanho do buffer na mensagem
     ((size_t*) (buffer+1))[2] = static_cast<size_t>(this->win_size); // Coloca tamanho da janela na mensagem
     // Mensagem:
     // MTYPE (uint8) | FILE SIZE (size_t) | SERVER TRANSMISSION BUFFER SIZE (size_t) | WINDOW SIZE (size_t)
-    socklen_t caddr_len = sizeof(caddr);
-    sockaddr *caddr_aux = (sockaddr *) &caddr;
+    //
+    sockaddr_in caddraux;
+    socklen_t caddr_len = sizeof(caddraux);
+    int tries = 32;
+    if (sendto(clientfd, buffer, 1+3*sizeof(size_t), 0, (sockaddr *) &caddr, caddr_len) < 0) {
+        return false;
+    }
     while (1) {
-        if (sendto(clientfd, buffer, 1+3*sizeof(size_t), 0, caddr_aux, sizeof(caddr)) < 0){
+        int ret = recv_from_client(clientfd, caddr, client_buffer, 2);
+        if (ret == -2) {
             return false;
         }
-        if (recvfrom(clientfd, client_buffer, 2, 0, caddr_aux, &caddr_len) < 0) {
-            return false;
+        if (ret == -1) {
+            if (--tries == 0) {
+                return false;
+            }
+            continue;
         }
-        if (client_buffer[0] == MessageType::ACK) {
+        if (ret == 1) {
             break;
         }
     }
 
-    fseek(file, 0, SEEK_SET);
+    if (client_buffer[0] != MessageType::ACK) {
+        return false;
+    }
 
     return true;
 }
@@ -232,4 +242,31 @@ void UDPServer::runIterative() {
             fclose(fp);
         }
     }
+}
+
+void UDPServer::send_wait_response(int clientfd, sockaddr_in &caddr) const {
+    uint8_t buffer[1];
+    buffer[0] = MessageType::SHUTUP;
+    socklen_t caddr_len = sizeof(caddr);
+    sockaddr *caddr_aux = (sockaddr *) &caddr;
+    sendto(clientfd, buffer, 1, 0, caddr_aux, caddr_len);
+}
+
+// Retorna 1 se o cliente for o mesmo, 0 se for diferente, -1 em timeout e -2 em erro.
+int UDPServer::recv_from_client(int clientfd, sockaddr_in &caddr, uint8_t *buffer, const size_t &bsize) {
+	sockaddr_in caddraux;
+    socklen_t cadd_len = sizeof(caddraux);
+
+    if (recvfrom(clientfd, buffer, bsize, 0, (sockaddr *) &caddraux, &cadd_len) < 0) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            return -1;
+        } 
+        return -2;
+    }
+    if (std::memcmp(&caddr, &caddraux, cadd_len) == 0) {
+        return 1;
+    }
+    send_wait_response(clientfd, caddraux);
+
+    return 0;
 }

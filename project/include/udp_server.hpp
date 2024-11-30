@@ -28,6 +28,10 @@ namespace tcp_vs_udp {
 
             bool send_file_and_buffer_info(int clientfd, sockaddr_in &caddr, FILE *file, const size_t &bsize);
 
+            int recv_from_client(int clientfd, sockaddr_in &caddr, uint8_t *buffer, const size_t &bsize);
+
+            void send_wait_response(int clientfd, sockaddr_in &caddr) const;
+
     };
 }
 
