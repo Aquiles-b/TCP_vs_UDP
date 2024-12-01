@@ -8,7 +8,7 @@ import hashlib
 import csv
 from time import sleep
 
-MAX_TRIES = 10
+MAX_TRIES = 20
 http_ip = None
 http_port = None
 file_server_port = 6666
@@ -138,15 +138,15 @@ def run_udp_client(clientid: int, filesize: str, result: dict):
     end_time = time.time()
     result["time"] = end_time - start_time
 
-    if ntries < MAX_TRIES:
-        stdout_client = process.stdout.read().split("\n")
-        result["ntries"] = int(stdout_client[0].split(":")[1])
-        result["nlosspackets"] = int(stdout_client[1].split(":")[1])
-        csum = calculate_sha256(f"downloads/{clientid}/{filesize}.bin")
-        result["csum"] = csum == checksums[filesize] # True se os checksums baterem e falso caso contrário
-    else:
+    if ntries >= MAX_TRIES:
         print(f"Client {clientid} failed to download {filesize}.bin")
         result["csum"] = False
+    else:
+        stdout_client = process.stdout.read().split("\n")
+        result["numtentativas"] = int(stdout_client[0].split(":")[1])
+        result["packet_loss"] = int(stdout_client[1].split(":")[1])
+        csum = calculate_sha256(f"downloads/{clientid}/{filesize}.bin")
+        result["csum"] = csum == checksums[filesize] # True se os checksums baterem e falso caso contrário
 
 def run_test_tcp(clientnum: int, interval: float, filesize: str, servermode: str, localnet: bool, buffersize: int):
     threads: list[threading.Thread] = []
