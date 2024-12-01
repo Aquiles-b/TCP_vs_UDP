@@ -9,7 +9,7 @@ def get_TCP_iter_par_metrics(tcp_logs_path: str):
     tcp_iter = dict()
     tcp_par = dict()
 
-    tcp_logs = sorted(tcp_logs, key=lambda x: int(x.split("_")[2].split(".")[0]))
+    tcp_logs = sorted(tcp_logs, key=lambda x: int(x.split("_")[-1].split(".")[0]))
 
     for log in tcp_logs:
         file_name = log.split("/")[-1]
@@ -44,7 +44,7 @@ def get_UDP_metrics(udp_logs_path: str):
     udp_logs = sorted(glob(udp_logs_path + "/*.csv"))
     udp = dict()
 
-    udp_logs = sorted(udp_logs, key=lambda x: (int(x.split("_")[2]), int(x.split("_")[3].split(".")[0])))
+    udp_logs = sorted(udp_logs, key=lambda x: (int(x.split("_")[3]), int(x.split("_")[-1].split(".")[0])))
 
     for log in udp_logs:
         file_name = log.split("/")[-1]
@@ -141,8 +141,8 @@ def plot_TCP_UDP_metrics(log_path: str, output_dir: str):
     # A média do sha256sum de acordo com o numero de clientes no tcp iter, tcp par (da ate pra agrupar o tcp nesse eu acho) e no udp
     fig, ax = plt.subplots()
     for server_type, data in {"TCP Iter": tcp_iter, "TCP Par": tcp_par}.items():
-        for num_clients, data in data.items():
-            mean_sha256sum = sum(data["sha256sum"]) / len(data["sha256sum"])
+        for num_clients, metrics in data.items():
+            mean_sha256sum = sum(metrics["sha256sum"]) / len(metrics["sha256sum"])
             ax.plot(list(data.keys()), [mean_sha256sum]*len(data), label=f"{server_type} {num_clients} clients")
 
     ax.set_title("Average sha256sum by Number of Clients")
