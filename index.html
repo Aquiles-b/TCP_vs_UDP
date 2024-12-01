@@ -11,11 +11,31 @@
 		<h1>TCP vs UDP</h1>
 	</header>
 	<main>
+        <section>
+            <h2>Alunos</h2>
+            <ul>
+                <li>Bruno Aquiles de Lima GRR:20221230</li>
+                <li>Marcelo Gyovani Pereira GRR:20221225</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Introdução</h2>
+            <p>O objetivo deste trabalho é comparar o desempenho dos protocolos
+            de transporte TCP e UDP em um cenário de transferência de arquivos. Para isso, foi
+            implementado um servidor e um cliente em C++ que utilizam os protocolos TCP e UDP.
+            O servidor TCP foi implementado de forma iterativa e paralela, enquanto o UDP foi implementado
+            somente de forma iterativa. Foram realizados testes de transferência de arquivos de
+            10MB em rede local, variando parâmetros como tamanho do buffer de transmissão, número de
+            clientes e tamanho da janela de controle de fluxo do UDP. Os resultados obtidos foram
+            analisados e comparados ao final.</p>
+        </section>
+
 		<section>
-			<h2>Comunicação</h2>
+			<h2>Forma da comunicação</h2>
 			<ol>
 				<li>Cliente inicia conexão com servidor</li>
-				<li>Cliente envia o nome do arquivo que deseja baixar (max 256 bytes)</li>
+                <li>Cliente envia o nome do arquivo que deseja baixar (max 256 bytes). UDP começa nesse passo</li>
 				<li>Servidor abre o arquivo</li>
 				<li>Servidor envia mensagem com tamanho do arquivo, tamanho do buffer de transmissão e tamanho de janela no caso do UDP.</li>
 				<li>Cliente recebe dados de transmissão, aloca buffer e se prepara para receber dados</li>
@@ -23,7 +43,13 @@
 				<li>Servidor encerra conexão</li>
 				<li>Cliente fecha arquivo</li>
 			</ol>
-			<p>O servidor TCP pode funcionar de tanto de forma iterativa, quanto de forma paralela com a criação de uma thread para lidar com cada cliente novo. Já o servidor UDP funciona somente de forma iterativa, mas foi considerado fazer de forma paralela por meio da criação de sockets utilizando outras portas e um socket que imita um socket em modo de escuta TCP, que iria redirecionar os clientes para outra porta e possibilitando o envio de arquivos de forma paralela por meio de outras threads, entretanto por conta da complexidade, essa ideia foi deixada de lado.</p>
+			<p>O servidor TCP pode funcionar tanto de forma iterativa, quanto de forma paralela com
+            a criação de uma thread para lidar com cada cliente novo. Já o servidor UDP funciona
+            somente de forma iterativa, mas foi considerado fazer de forma paralela por meio da
+            criação de sockets utilizando outras portas e um socket que imita um socket em modo
+            de escuta TCP, que iria redirecionar os clientes para outra porta e possibilitando
+            o envio de arquivos de forma paralela por meio de outras threads, entretanto por conta
+            da complexidade, essa ideia foi deixada de lado.</p>
 		</section>
 
 		<section>
@@ -39,10 +65,16 @@
 			<p>Para compilar o código, basta rodar o comando <tt>make</tt>, desde que o Makefile e g++ estejam instalados.</p>
 			<p>Para rodar o servidor:</p>
 			<tt class="bash">./server &lt;ipv4_addr&gt; &lt;port&gt; &lt;protocol&gt; &lt;buffer_size&gt; &lt;win_size_udp | mode_tcp(iter|par)&gt;</tt>
-			<p>Sendo que o endereço IPv4 é o endereço que se deseja rodar o servidor, geralmente 0.0.0.0 ou 127.0.0.1. Também é necessário a porta que o servidor deve usar, o protocolo de transporte ("tcp" ou "udp"), tamanho do buffer utilizado para as transmissões e o último argumento varia de acordo com o protocolo de transporte. No caso do UDP, é o tamanho da janela utilizada na janela deslizante (em quantidade de segmentos que possuem tamanho <tt>&lt;buffer_size&gt;</tt>), enquanto no TCP é o modo do servidor ("iter" para iterativo e "par" para paralelo)</p>
+			<p>Sendo que o endereço IPv4 é o endereço que se deseja rodar o servidor. Também é necessário
+            a porta que o servidor deve usar, o protocolo de transporte ("tcp" ou "udp"), tamanho
+            do buffer utilizado para as transmissões e o último argumento varia de acordo com
+            o protocolo de transporte. No caso do UDP, é o tamanho da janela utilizada na janela
+            deslizante (em quantidade de segmentos que possuem tamanho <tt>&lt;buffer_size&gt;</tt>),
+            enquanto no TCP é o modo do servidor ("iter" para iterativo e "par" para paralelo)</p>
 			<p>Para rodar o cliente:</p>
 			<tt class="bash">./client &lt;server_ipv4_addr&gt; &lt;server_port&gt; &lt;protocol&gt; &lt;fname&gt; &lt;fout&gt;</tt>
-			<p>Onde é necessário o endereço IPv4 do servidor, a porta do servidor, o protocolo ("tcp" ou "udp"), o nome do arquivo que será baixado e o nome do arquivo que será salvo.</p>
+			<p>Onde é necessário o endereço IPv4 do servidor, a porta do servidor, o protocolo
+            ("tcp" ou "udp"), o nome do arquivo que será baixado e o nome do arquivo que será salvo.</p>
 		</section>
 
 		<section>
@@ -54,92 +86,90 @@
 			<pre>
 project/
 ├── include
-│   ├── <a target="_blank" href="project/include/basic_client.hpp">basic_client.hpp</a>
-│   ├── <a target="_blank" href="project/include/basic_server.hpp">basic_server.hpp</a>
-│   ├── <a target="_blank" href="project/include/protocol.h">protocol.h</a>
-│   ├── <a target="_blank" href="project/include/tcp_client.hpp">tcp_client.hpp</a>
-│   ├── <a target="_blank" href="project/include/tcp_server.hpp">tcp_server.hpp</a>
-│   ├── <a target="_blank" href="project/include/udp_client.hpp">udp_client.hpp</a>
-│   └── <a target="_blank" href="project/include/udp_server.hpp">udp_server.hpp</a>
+│   ├── <a target="_blank" href="project/include/basic_client.hpp.txt">basic_client.hpp</a>
+│   ├── <a target="_blank" href="project/include/basic_server.hpp.txt">basic_server.hpp</a>
+│   ├── <a target="_blank" href="project/include/protocol.h.txt">protocol.h</a>
+│   ├── <a target="_blank" href="project/include/tcp_client.hpp.txt">tcp_client.hpp</a>
+│   ├── <a target="_blank" href="project/include/tcp_server.hpp.txt">tcp_server.hpp</a>
+│   ├── <a target="_blank" href="project/include/udp_client.hpp.txt">udp_client.hpp</a>
+│   └── <a target="_blank" href="project/include/udp_server.hpp.txt">udp_server.hpp</a>
 └── src
-		├── <a target="_blank" href="project/src/basic_client.cpp">basic_client.cpp</a>
-		├── <a target="_blank" href="project/src/basic_server.cpp">basic_server.cpp</a>
-		├── <a target="_blank" href="project/src/client.cpp">client.cpp</a>
-		├── <a target="_blank" href="project/src/server.cpp">server.cpp</a>
-		├── <a target="_blank" href="project/src/tcp_client.cpp">tcp_client.cpp</a>
-		├── <a target="_blank" href="project/src/tcp_server.cpp">tcp_server.cpp</a>
-		├── <a target="_blank" href="project/src/udp_client.cpp">udp_client.cpp</a>
-		└── <a target="_blank" href="project/src/udp_server.cpp">udp_server.cpp</a>
+		├── <a target="_blank" href="project/src/basic_client.cpp.txt">basic_client.cpp</a>
+		├── <a target="_blank" href="project/src/basic_server.cpp.txt">basic_server.cpp</a>
+		├── <a target="_blank" href="project/src/client.cpp.txt">client.cpp</a>
+		├── <a target="_blank" href="project/src/server.cpp.txt">server.cpp</a>
+		├── <a target="_blank" href="project/src/tcp_client.cpp.txt">tcp_client.cpp</a>
+		├── <a target="_blank" href="project/src/tcp_server.cpp.txt">tcp_server.cpp</a>
+		├── <a target="_blank" href="project/src/udp_client.cpp.txt">udp_client.cpp</a>
+		└── <a target="_blank" href="project/src/udp_server.cpp.txt">udp_server.cpp</a>
 			</pre>
 			<p>Os arquivos <tt>client.cpp</tt> e <tt>server.cpp</tt> contém as implementações da interface de linha de comando do cliente e servidor, respectivamente. O arquivo <tt>protocol.h</tt> contém definições utilizadas tanto pelo cliente quanto pelo servidor, servindo como um arquivo comum apenas para definição de um enum.</p>
 			<p>O código também está disponível no <a target="_blank" href="https://github.com/Aquiles-b/TCP_vs_UDP">GitHub</a></p>
 		</section>
+
 		<section>
 			<h2>Testes</h2>
 			<p>Os mesmos testes para servidor iterativo serão feitos para servidor paralelo.</p>
-			<p>Dois tipos de teste:</p>
-			<ul>
-				<li>Rede local </li>
-				<li>Passando pela internet (Usando LAN virtual/radmin)</li>
-			</ul>
 			<p>Cada teste é feito com base no número de clientes:</p>
 			<ul>
-				<li>O número de clientes começa em 1 e vai dobrando até 64.</li>
-				<li>Cada cliente faz uma transferência de arquivos de 1MB, 10MB, 100MB e 1GB</li>
+				<li>O número de clientes começa em 1 e vai dobrando até 8.</li>
+				<li>Cada cliente faz uma transferência de um arquivo de 10MB.</li>
 				<li>Os dados de cada teste são salvos em um arquivo CSV</li>
 			</ul>
-			<p>Para cada teste, será analisado as métricas:</p>
+			<p>Para cada teste, serão analisadas as métricas:</p>
 			<ul>
+                <li>Número de tentativas</li>
 				<li>Perda de pacotes</li>
 				<li>Tempo de download</li>
 				<li>sha256sum do arquivo baixado</li>
 			</ul>
+            <br>
 			
-					<h3>Estrutura de diretórios</h3>
+            <h3>Estrutura de diretórios</h3>
 			<p>Cada teste vai gerar logs salvos no diretório <tt>logs/</tt> com a seguinte estrutura:</p>
 			<pre>
 logs
 ├── client
-│   ├── rede_externa
-│   │   ├── TCP
-│   │   └── UDP
 │   └── rede_local
 │       ├── TCP
-│       │   ├── iter_1.csv
-│       │   ├── iter_2.csv
-│       │   ├── par_1.csv
-│       │   └── par_2.csv
+│       │   ├── iter_1_1024.csv
+│       │   ├── iter_2_1024.csv
+│       │   ├── par_1_4096.csv
+│       │   └── par_2_4096.csv
 │       └── UDP
-│           ├── iter_1.csv
-│           └── iter_2.csv
+│           ├── iter_4_1024_16.csv
+│           ├── iter_8_4096_4.csv
+│           └── iter_6_1024_64.csv
 └── server
-		├── rede_externa
-		│   ├── TCP
-		│   └── UDP
 		└── rede_local
 				├── TCP
-				│   ├── iter_2_8192.txt
-				│   └── par_4_4096.txt
+				│   ├── iter_8192.txt
+				│   └── par_4096.txt
 				└── UDP
-						├── iter_2_8192_8.txt
-						└── par_2_4096_15.txt
+            └── iter_4_1024_16.txt
+            └── iter_2_4096_64.txt
+
 			</pre>
-			<h4>Logs server</h4>
+			<h4>Logs client</h4>
 			<p>
-				Onde <tt>iter_2_8192.txt</tt> é o log do servidor TCP iterativo com tamanho de buffer igual a 8192 bytes atendendo 2 clientes. Enquanto
-				<tt>parX_N.txt</tt> é o log do servidor TCP paralelo com tamanho de buffer N bytes atendendo X clientes.
+				Onde <tt>iter_2_8192.csv</tt> é o log do cliente TCP comunicando com servidor iterativo
+                com tamanho de buffer igual a 8192 bytes atendendo 2 clientes. Enquanto
+				<tt>par_X_N.csv</tt> é o log do servidor TCP paralelo com tamanho de buffer N bytes atendendo X clientes.
 			</p>
 			<p>
 				Para o UDP, é a mesma coisa com a adição do tamanho da janela no final do nome. Por exemplo,
-				<tt>iter_X_N_M.txt</tt> é o servidor UDP iterativo com tamanho de buffer igual a N bytes e tamanho de janela M atendendo X clintes. Como não há implementação do servidor UDP "paralelo", não há logs em paralelo para o UDP.
+				<tt>iter_X_N_M.csv</tt> é o cliente UDP comunicando com servidor iterativo com tamanho de buffer igual
+                a N bytes e tamanho de janela M atendendo X clintes. Como não há implementação do servidor UDP
+                "paralelo", não há logs em paralelo para o UDP.
 			</p>
-			<h4>Logs client</h4>
+			<h4>Logs server</h4>
 			<p>
-				<tt>iter_X_N.csv</tt> é o log da conexão de X clientes com um servidor iterativo que possui um buffer de transmissão de N bytes. Enquanto
-				<tt>par_X_N.csv</tt> é a conexão de X clientes com um servidor paralelo que possui um buffer de transmissão de N bytes.
-				No caso do UDP, os <tt>csv</tt> também possuem o campo de janela, sendo nomeados da seguinte forma: <tt>iter_X_N_M.csv</tt> onde X é o número de clientes, N é o tamanho do buffer e M é o tamanho da janela do controle de fluxo.
+				<tt>iter_N.txt</tt> é o log de todas as conexões de clientes com o servidor iterativo que possui um buffer de transmissão de N bytes. Enquanto
+				<tt>par_N.txt</tt> são todas as conexões de clientes com um servidor paralelo que possui um buffer de transmissão de N bytes.
+				No caso do UDP, os <tt>txt</tt> também possuem o campo de janela, sendo nomeados da
+                seguinte forma: <tt>iter_N_M.txt</tt> onde N é o tamanho do buffer e M é o tamanho da janela do controle de fluxo.
 			</p>
-			<p>Cada arquivo <tt>csv</tt> terá a seguinte estrutura:</p>
+			<p>Cada arquivo <tt>csv</tt> gerado por um teste, terá a seguinte estrutura:</p>
 			<table class="tab-log">
 				<thead>
 					<tr>
@@ -157,24 +187,6 @@ logs
 						<td>1</td>
 					</tr>
 					<tr>
-						<td>N</td>
-						<td>c1_x1</td>
-						<td>c1_y1</td>
-						<td>1</td>
-					</tr>
-					<tr>
-						<td>N</td>
-						<td>c1_x2</td>
-						<td>c1_y2</td>
-						<td>1</td>
-					</tr>
-					<tr>
-						<td>N</td>
-						<td>c1_x3</td>
-						<td>c1_y3</td>
-						<td>1</td>
-					</tr>
-					<tr>
 						<td>-</td>
 						<td>-</td>
 						<td>Tempo de teste total</td>
@@ -182,8 +194,17 @@ logs
 					</tr>
 				</tbody>
 			</table>
-			<p>Onde cada linha é uma transmissão de arquivo para um cliente <tt>cn</tt>. A primeira coluna indica o número de tentativas necessárias para baixar o arquivo, útil somente no caso do UDP, por causa que o servidor iterativo fica recusando clientes enquanto está enviando um arquivo para o cliente. A segunda coluna mostra a perda de pacotes do cliente durante o download, mas assim como o número de tentativas, é útil somente para a análise do UDP. A terceira coluna é o tempo de download, quanto tempo o cliente levou para baixar o arquivo de teste. A última coluna é o resultado da comparação do checksum SHA-256 entre o arquivo original e o arquivo baixado.</p>
-			<p>A última linha do <tt>csv</tt> apresenta um único valor que fica na terceira coluna, representando o tempo total de um teste/bateria de clientes, útil no caso do TCP paralelo, onde o tempo total não é necessariamente a soma do tempo de todos os clientes.</p>
+			<p>Onde cada linha é uma transmissão de arquivo para um cliente <tt>cn</tt>. A primeira
+            coluna indica o número de tentativas necessárias para baixar o arquivo, útil somente
+            no caso do UDP, por causa que o servidor iterativo fica recusando clientes enquanto
+            está enviando um arquivo para o cliente. A segunda coluna mostra a perda de pacotes
+            do cliente durante o download, mas assim como o número de tentativas, é útil somente
+            para a análise do UDP. A terceira coluna é o tempo de download, quanto tempo o cliente
+            levou para baixar o arquivo de teste. A última coluna é o resultado da comparação
+            do checksum SHA-256 entre o arquivo original e o arquivo baixado.</p>
+			<p>A última linha do <tt>csv</tt> apresenta um único valor que fica na terceira coluna, 
+            representando o tempo total de um teste/bateria de clientes, útil no caso do TCP paralelo,
+            onde o tempo total não é necessariamente a soma do tempo de todos os clientes.</p>
 			<p>Exemplo de arquivo <tt>csv</tt> gerado de um teste com 2 clientes:</p>
 			<table class="tab-log">
 				<thead>
@@ -207,43 +228,7 @@ logs
 						<td>c2_b0</td>
 						<td>1</td>
 					</tr>
-					<tr>
-						<td>N</td>
-						<td>c1_x1</td>
-						<td>c1_y1</td>
-						<td>1</td>
-					</tr>
-					<tr>
-						<td>N</td>
-						<td>c2_a1</td>
-						<td>c2_b1</td>
-						<td>1</td>
-					</tr>
-					<tr>
-						<td>N</td>
-						<td>c1_x2</td>
-						<td>c1_y2</td>
-						<td>1</td>
-					</tr>
-					<tr>
-						<td>N</td>
-						<td>c2_a2</td>
-						<td>c2_b2</td>
-						<td>1</td>
-					</tr>
-					<tr>
-						<td>N</td>
-						<td>c1_x3</td>
-						<td>c1_y3</td>
-						<td>1</td>
-					</tr>
-					<tr>
-						<td>N</td>
-						<td>c2_a3</td>
-						<td>c2_b3</td>
-						<td>1</td>
-					<tr>
-						<td>-</td>
+					<td>-</td>
 						<td>-</td>
 						<td>Tempo de teste total</td>
 						<td>-</td>
@@ -254,28 +239,94 @@ logs
 			<p>Para a realização dos testes foi implementado um servidor HTTP simples que possibilita o cliente instanciar o servidor de testes remotamente, permitindo a automatização de todos os testes. A implementação desse servidor foi feita em liguagem Python e o código pode ser encontrado no diretório <tt>scripts</tt>.</p>
 			<pre>
 scripts/
-├── <a href="scripts/estrutura.sh.txt" target="_blank">estrutura.sh</a>
-├── <a href="scripts/gen_files.py" target="_blank">gen_files.py</a>
-├── <a href="scripts/run_test.py" target="_blank">run_test.py</a>
-└── <a href="scripts/server_manager.py" target="_blank">server_manager.py</a>
+├── <a href="scripts/gen_files_and_structure.py.txt" target="_blank">gen_files_and_structure.py</a>
+└── <a href="scripts/plot_results.py.txt" target="_blank">plot_results.py</a>
+├── <a href="scripts/run_test.py.txt" target="_blank">run_test.py</a>
+└── <a href="scripts/server_manager.py.txt" target="_blank">server_manager.py</a>
 			</pre>
-			<p>O arquivo <tt>estrutura.sh</tt> é um script para gerar a estrutura de diretórios necessária para a realização dos testes. O <tt>gen_files.py</tt> gera arquivos aleatórios de 1MB, 10MB, 100MB e 1GB para utilização nos testes. O script <tt>run_test.py</tt> é o cliente HTTP que faz a instanciação de múltiplos clientes em paralelo para realizar os testes dos protocolos TCP e UDP. Por fim, o <tt>server_manager.py</tt> é o servidor HTTP que gerencia o servidor de teste, instanciando novos servidores em portas diferentes quando requisitado.</p>
-			<p>Foram realizados testes simulando a execução de 1, 2, 4, e 8 clientes requirindo arquivos de 10MB para o servidor. Para o TCP, foram realizados testes variando o número de clientes, o tamanho do buffer de transmissão e o modo do servidor (iterativo ou paralelo). Para o UDP, o modo não variou porque ele possui somente o modo iterativo, entretanto o tamanho da janela do controle de fluxo foi variado. Foram utilizados arquivos de somente 10MB por causa da grande quantidade de testes que resultam em um tráfego de rede muito alto, fazendo os testes ficarem muito extensos.</p>
-			<p>Após a tranferência de arquivos, o script calcula o hash SHA-256 do arquivo baixado e do arquivo original (o cliente precisa ter uma cópia do arquivo original antes de rodar os testes) e compara, colocando 1 no seu log csv caso o hash seja igual ao original e 0 caso contrário, permitindo o cálculo da taxa de sucesso de download e a necessidade de verificação de erros.</p>
+			<p>O arquivo <tt>gen_files_and_structure.py</tt> é um script para gerar a estrutura de diretórios
+            necessária para a realização dos testes e também o arquivo aleatório
+            de 10MB para utilização nos testes. O script <tt>run_test.py</tt>
+            é o cliente HTTP que faz a instanciação de múltiplos clientes em paralelo para realizar
+            os testes dos protocolos TCP e UDP. Por fim, o <tt>server_manager.py</tt> é o servidor
+            HTTP que gerencia o servidor de teste, instanciando novos servidores em portas diferentes
+            quando requisitado.</p>
+			<p>Foram realizados testes simulando a execução de 1, 2, 4, e 8 clientes requirindo
+            arquivos de 10MB para o servidor. Para o TCP, foram realizados testes variando o número
+            de clientes, o tamanho do buffer de transmissão e o modo do servidor (iterativo ou
+            paralelo). Para o UDP, o modo não variou porque ele possui somente o modo iterativo,
+            entretanto o tamanho da janela do controle de fluxo foi variado. Foram utilizados
+            arquivos de somente 10MB por causa da grande quantidade de testes, o que resultava em
+            um tráfego de rede muito alto, fazendo os testes ficarem muito extensos.</p>
+			<p>Após a tranferência de arquivos, o script calcula o hash SHA-256 do arquivo baixado
+            e do arquivo original (o cliente precisa ter uma cópia do arquivo original antes de
+            rodar os testes) e compara, colocando 1 no seu log csv caso o hash seja igual ao original
+            e 0 caso contrário, permitindo o cálculo da taxa de sucesso de download e a necessidade
+            de verificação de erros.</p>
 			<p>Aqui estão os parâmetros de teste utilizados, tendo um teste para cada combinação de parâmetros:</p>
 			<ul>
 				<li>Tamanho de buffer de transmissão = [1024, 4096, 16384, 49152] bytes</li>
 				<li>Número de clientes = [1, 2, 4, 8]</li>
 				<li>Tamanho de janela UDP = [4, 16, 64, 256]</li>
-				<li><s>Intervalo de tempo</s> = [0] (O intervalo de tempo entre a instanciação de clientes foi retirado pois sua relevância não é tão alta e para diminuir o grande número de testes)</li>
+				<li><s>Intervalo de tempo</s> = [0] (O intervalo de tempo entre a instanciação de clientes
+                    foi retirado pois sua relevância não é tão alta e ajuda a diminuir o grande número de testes)</li>
 				<li>Tamanho de Arquivo = 10MB</li>
 			</ul>
-			<p>Os testes foram realizados utilizando dois ambientes, rede local e rede externa. Para a rede externa, foi utilizado o Radmin, um software de acesso remoto que permite criar uma rede virtual privada (VPN), simulando condições de tráfego da internet, como latência e perda de pacotes, para testes mais realistas.</p>
+			<p>Inicialmente, os testes seriam realizados utilizando dois ambientes, rede local e rede externa.
+            Para a rede externa, seria utilizado o Radmin, um software de acesso remoto que permite
+            criar uma rede virtual privada (VPN), simulando condições de tráfego da internet,
+            como latência e perda de pacotes, para testes mais realistas. Entretanto, por conta
+            de limitações de tempo e tecnicas, os testes foram realizados somente em rede local.</p>
 		</section>
 		<section>
 			<h2>Resultados</h2>
-			<!--TODO: Comentar os resultados-->
+            <h3>Tempo de Download</h3>
+            <p>Os gráficos abaixo mostram o tempo médio de download dos arquivos de 10MB para cada
+            teste realizado. O eixo X representa o número de clientes e o eixo Y representa o tempo
+            médio de download em segundos.</p>
+            <div class="chart">
+                <p>Tempo de download do TCP:</p>
+                <div class="tcp_res">
+                    <img src="results/TCP_Iter_temp_download.png" alt="Gráfico de tempo de download do TCP iterativo">
+                    <img src="results/TCP_Par_temp_download.png" alt="Gráfico de tempo de download do TCP paralelo">
+                </div>
+                <p>Tempo de download do UDP:</p>
+                <img src="results/UDP_temp_download.png" alt="Gráfico de tempo de download do UDP" class="graph_3">
+            </div>
+            <h3>Perda de Pacotes</h3>
+            <p>Perda de pacotes dos clientes durante a transferência dos
+            arquivos de 10MB para cada teste realizado em UDP. O eixo X representa o número de
+            clientes e o eixo Y representa a porcentagem de pacotes perdidos.</p>
+            <div class="chart">
+                <img src="results/UDP_packet_loss.png" alt="Gráfico de perda de pacotes do UDP" class="graph_3">
+            </div>
+            <h3>Checksum SHA-256</h3>
+            <p>Mostra a porcentagem de arquivos que tiveram o checksum SHA-256
+            igual ao arquivo original para cada teste realizado. O eixo X representa o número de
+            clientes e o eixo Y representa a porcentagem de arquivos com checksum igual ao original.</p>
+            <div class="chart">
+                <p>Checksum SHA-256 do TCP:</p>
+                <img src="results/avg_sha256sum.png" alt="Gráfico de checksum SHA-256">
+                <p>Checksum SHA-256 do UDP:</p>
+                <img src="results/UDP_avg_sha256sum.png" alt="Gráfico de checksum SHA-256 do UDP" class="graph_3">
+            </div>
 		</section>
+
+        <section>
+            <h2>Conclusão</h2>
+            <p>Os testes realizados mostraram que o protocolo UDP tem uma melhora significativa no
+            tempo de download conforme o tamanho do buffer de transmissão e o tamanho da janela de
+            controle de fluxo aumentam. Por outro lado, um buffer maior resultou em um aumento na
+            perda de pacotes. O protocolo TCP, manteve um tempo de download mais constante para cada
+            teste, sendo que o TCP iterativo teve uma melhor performance em relação ao TCP paralelo,
+            provavelmente por conta da sobrecarga de criação de threads em uma máquina com poucos
+            recursos.</p>
+            <p>No geral, o protocolo TCP é uma alternativa mais segura e confiável para transferência,
+            eliminando a necessidade de implementar mecanismos muito complexos caso a perda de pacotes
+            seja um problema (o que foi o caso desse trabalho). Ainda assim, o UDP pode ser uma alternativa
+            mais rápida e eficiente para transferência de arquivos em redes locais, onde a perda de
+            pacotes não mostrou ser um problema tão grande.</p>
+        </section>
 	</main>
 
 </body>

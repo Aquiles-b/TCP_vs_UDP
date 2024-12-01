@@ -63,7 +63,7 @@ header {
 
 main {
 	margin: 10px auto;
-	max-width: 1000px;
+	max-width: 1200px;
 	background-color: var(--color3);
 	padding: 40px;
 	border-radius: 10px;
@@ -138,4 +138,22 @@ section {
 
 .tab-log tbody tr:hover {
 	background-color: var(--hover-color);
+}
+
+.chart {
+    justify-content: center;
+}
+
+.tcp_res {
+    display: flex;
+    justify-content: center;
+}
+
+.chart div img {
+    width: 40%;
+    height: auto;
+}
+
+.graph_3 {
+    width: 100%;
 }

@@ -1,4 +1,5 @@
 import os
+import random
 
 def create_files():
     # Definir os tamanhos dos arquivos em bytes
@@ -12,11 +13,14 @@ def create_files():
     directory = "files"
     os.makedirs(directory, exist_ok=True)
 
+    # Escolhe uma seed para gerar os arquivos
+    random.seed(42)
+
     # Gera os arquivos
     for filename, size in sizes.items():
         filepath = os.path.join(directory, filename)
         with open(filepath, "wb") as file:
-            file.write(os.urandom(size))  # Gera dados aleatórios para preencher o arquivo
+            file.write(random.randbytes(size))
         print(f"Arquivo criado: {filepath} ({size / (1_000_000):.2f} MB)")
 
 def gen_structure():
